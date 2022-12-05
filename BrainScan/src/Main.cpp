@@ -1,5 +1,6 @@
 #include "App.hpp"
 #include "Core.hpp"
+#include "SimpleITK-2.3/sitkImage.h"
 
 int main(int argc, char** argv)
 {
@@ -18,6 +19,10 @@ int main(int argc, char** argv)
 			LOG_CRITICAL("Critical log: {0} = {1}", 'y', 5);
 		}
 	}
+
+	itk::simple::Image a;
+	
+	LOG_INFO("{}", a.GetWidth());
 
 	App::GetInstance().Run();
 	
