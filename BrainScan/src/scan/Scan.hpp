@@ -11,5 +11,5 @@ private:
 
 public:
 	virtual bool SaveToFile(std::string FileName) override;
-	virtual bool LoadFromFile(std::string FileName) override;
+	virtual bool LoadFromFile(std::string inputImageFileName) override;
 };

@@ -6,6 +6,7 @@
 # moje :)
 bin-int/
 Dependencies/
+NiftiFiles/
 
 # User-specific files
 *.rsuser
