@@ -28,7 +28,7 @@ UIToolBar::UIToolBar(float posX, float posY)
 
 void UIToolBar::AddButton(std::function<void(void)> f)
 {
-	m_Buttons.emplace_back(m_Buttons.size() + 1, f);
+	m_Buttons.emplace_back((int32_t)m_Buttons.size() + 1, f);
 }
 
 void UIToolBar::Render()
