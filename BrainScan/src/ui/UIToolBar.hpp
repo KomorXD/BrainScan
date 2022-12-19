@@ -2,6 +2,7 @@
 
 #include "IUIPanel.hpp"
 #include "imgui/imgui.h"
+#include "../OpenGL.hpp"
 
 #include <functional>
 #include <vector>
@@ -13,15 +14,17 @@ class UIToolBarButton
 		int m_ID;
 
 	public:
-		UIToolBarButton(int id, std::function<void(void)> func);
+		UIToolBarButton(int id, const std::function<void(void)>& func);
 
-		void Render(ImVec2 uv0, ImVec2 uv1);
+		void Render(void* textID, ImVec2 uv0, ImVec2 uv1) const;
 };
 
 class UIToolBar : public IUIPanel
 {
 	private:
 		std::vector<UIToolBarButton> m_Buttons;
+
+		Texture m_ToolBarTexture;
 
 	public:
 		UIToolBar(float posX = 0.0f, float posY = 0.0f);
@@ -30,4 +33,7 @@ class UIToolBar : public IUIPanel
 		void AddButton(std::function<void(void)> f);
 
 		virtual void Render() override;
+
+	private:
+		void RenderButtons();
 };
