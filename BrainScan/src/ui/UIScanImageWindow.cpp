@@ -16,9 +16,9 @@ UIScanImageWindow::UIScanImageWindow(int scanID, float posX, float posY, float h
 	LOG_INFO("Initialized scan panel panel #{}", scanID);
 }
 
-void UIScanImageWindow::SetScanTexture(std::unique_ptr<Texture>&& text)
+void UIScanImageWindow::SetScanTexture(std::shared_ptr<Texture>& text)
 {
-	m_ScanTexture = std::move(text);
+	m_ScanTexture = text;
 }
 
 void UIScanImageWindow::Render()
@@ -39,7 +39,8 @@ void UIScanImageWindow::Render()
 
 	if(m_ScanTexture)
 	{
-		ImGui::Image((void*)(intptr_t)m_ScanTexture->GetID(), ImVec2(m_Width - 32.0f, m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
+		// TEMPORARY HARD CODED 4
+		ImGui::Image((void*)(intptr_t)4, ImVec2(m_Width - 32.0f, m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
 	}
 	
 	ImGui::EndChild();
