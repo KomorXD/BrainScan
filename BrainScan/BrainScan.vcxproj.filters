@@ -102,6 +102,9 @@
     <ClCompile Include="src\vendor\stbi_image\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\scan\Views.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vendor\glad\glad.h">
@@ -1052,12 +1055,6 @@
     <ClInclude Include="src\scan\Serializable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\scan\sequence\ISequence.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\scan\sequence\Layer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\scan\annotations\IFunctionalAnnotation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1083,6 +1080,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\vendor\stbi_image\stb_image.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scan\Views.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

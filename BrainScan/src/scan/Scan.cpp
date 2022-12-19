@@ -4,16 +4,15 @@
 #include <typeinfo>
 #include <cstdlib>
 #include <string>
-#include <iostream>
-#include <math.h>
-
-//#include <iostream>
-//#include <fstream>
 
 namespace sitk = itk::simple;
+Scan::Scan()
+{
+	m_Min = INT32_MAX;
+	m_Max = INT32_MIN;
+}
 bool Scan::SaveToFile(const std::string & inputImageFileName)
 {
-
     return false;
 }
 
@@ -46,94 +45,91 @@ bool Scan::LoadFromFile(const std::string & inputImageFileName)
 		return false;
 	}
 
-	
-	m_Depth = m_Image.GetDepth();
-	m_Height = m_Image.GetHeight();
-	m_Width = m_Image.GetWidth();
-
-	m_Views.InitializeViews(m_Width, m_Height, m_Depth);
-	FindMinMaxValues();
+	unsigned int axialWidth = m_Image.GetWidth();
+	unsigned int axialHeight = m_Image.GetHeight();
+	unsigned int axialDepth = m_Image.GetDepth();
+	m_Views.InitializeViews(axialWidth, axialHeight, axialDepth);
+	FindMinMax(m_Views.axial);
 	CreateViews();
 
     return true;
 }
 
-void Scan::CreateAxialView()
-{
-	std::vector<unsigned int> pixelIndex;
-	for (int d = 0; d < m_Depth; d++)
-	{
-		for (int h = 0; h < m_Height; h++)
-		{
-			for (int w = 0; w < m_Width; w++)
-			{				
-				pixelIndex = { { static_cast<unsigned int>(w),
-								 static_cast<unsigned int>(h),
-								 static_cast<unsigned int>(d)
-								} };
-				m_Views.axial.data.at(d)[w + (m_Width * h)] = NormalizeValue(m_Image.GetPixelAsInt32(pixelIndex));
-			}
-		}
-	}
-}
-
-void Scan::CreateSagittalView()
-{
-	std::vector<unsigned int> pixelIndex;
-	for (int h = 0; h < m_Height; h++)
-	{
-		for (int d = 0; d < m_Depth; d++)
-		{
-			for (int w = 0; w < m_Width; w++)
-			{
-				pixelIndex = { { static_cast<unsigned int>(w),
-								 static_cast<unsigned int>(d),
-								 static_cast<unsigned int>(h)
-								} };
-				//m_Views.sagittal.data.at(h)[w + (m_Width * d)] = NormalizeValue(m_Image.GetPixelAsInt32(pixelIndex));
-			}
-		}
-	}
-}
-
-void Scan::CreateCoronalView()
-{
-	std::vector<unsigned int> pixelIndex;
-	for (int w = 0; w < m_Width; w++)
-	{
-		for (int h = 0; h < m_Height; h++)
-		{
-			for (int d = 0; d < m_Depth; d++)
-			{
-				pixelIndex = { { static_cast<unsigned int>(d),
-								 static_cast<unsigned int>(h),
-								 static_cast<unsigned int>(w)
-								} };
-				m_Views.axial.data.at(w)[d + (m_Depth * h)] = NormalizeValue(m_Image.GetPixelAsInt32(pixelIndex));
-			}
-		}
-	}
-}
-
 void Scan::CreateViews()
 {
-	CreateAxialView();
-	CreateCoronalView();
-	CreateSagittalView();
+	PopulateAxialView();
+	CreateSagittalViewBasedOnAxialView();
+	CreateCoronalViewBasedOnAxialView();
 }
 
-void Scan::FindMinMaxValues()
+void Scan::PopulateAxialView()
 {
 	std::vector<unsigned int> pixelIndex;
-	for (int d = 0; d < m_Depth; d++)
+	unsigned int rowLength = m_Views.axial.GetWidth();
+
+	for (int d = 0; d < m_Views.axial.GetDepth(); d++)
 	{
-		for (int h = 0; h < m_Height; h++)
+		for (int h = 0; h < m_Views.axial.GetHeight(); h++)
 		{
-			for (int w = 0; w < m_Width; w++)
+			for (int w = 0; w < m_Views.axial.GetWidth(); w++)
 			{
 				pixelIndex = { { static_cast<unsigned int>(w),
 								 static_cast<unsigned int>(h),
 								 static_cast<unsigned int>(d)
+								} };
+
+				float value = NormalizeValue(m_Image.GetPixelAsInt32(pixelIndex));
+				m_Views.axial.GetBuffer(d)[w + (rowLength * h)] = value;
+			}
+		}
+	}
+}
+
+void Scan::CreateSagittalViewBasedOnAxialView()
+{
+	unsigned int axialRowLength = m_Views.axial.GetWidth();
+
+	for (int w = 0; w < m_Views.axial.GetWidth(); w++)
+	{	
+		for (int d = 0; d < m_Views.axial.GetDepth(); d++)
+		{		
+			for (int h = 0; h < m_Views.axial.GetHeight(); h++)
+			{
+				float value = m_Views.axial.GetBuffer(d)[w + (axialRowLength * h)];
+				m_Views.sagittal.GetBuffer(w)[h + (m_Views.sagittal.GetWidth() * d)] = value;
+			}
+		}
+	}
+}
+
+void Scan::CreateCoronalViewBasedOnAxialView()
+{
+	unsigned int axialRowLength = m_Views.axial.GetWidth();
+	for (int h = 0; h < m_Views.axial.GetHeight(); h++)
+	{
+		for (int d = 0; d < m_Views.axial.GetDepth(); d++)
+		{
+			for (int w = 0; w < m_Views.axial.GetWidth(); w++)
+			{
+				float value = m_Views.axial.GetBuffer(d)[w + (axialRowLength * h)];
+				m_Views.coronal.GetBuffer(h)[w + (m_Views.coronal.GetWidth() * d)] = value;
+			}
+		}
+	}
+}
+
+void Scan::FindMinMax(View& view)
+{
+	std::vector<unsigned int> pixelIndex;
+	for (int d = 0; d < view.GetDepth(); d++)
+	{
+		for (int h = 0; h < view.GetHeight(); h++)
+		{
+			for (int w = 0; w < view.GetWidth(); w++)
+			{
+				pixelIndex = { { static_cast<unsigned int>(w),
+									static_cast<unsigned int>(h),
+									static_cast<unsigned int>(d)
 								} };
 				int pixelValue = m_Image.GetPixelAsInt32(pixelIndex);
 				if (pixelValue < m_Min)
@@ -154,52 +150,3 @@ float Scan::NormalizeValue(int value)
 	return (float)(value - m_Min) / (m_Max - m_Min);
 }
 
-Views::~Views()
-{
-	for (float* buffer : axial.data)
-	{
-		delete[] buffer;
-	}
-	for (float* buffer : sagittal.data)
-	{
-		delete[] buffer;
-	}
-	for (float* buffer : coronal.data)
-	{
-		delete[] buffer;
-	}
-}
-
-void Views::InitializeViews(unsigned int width, unsigned int height, unsigned int depth)
-{
-	InitializeAxial(depth, width, height);
-	InitializeSagittal(height, depth, width);
-	InitializeCoronal(width, height, depth);
-}
-
-void Views::InitializeCoronal(unsigned int width, unsigned int height, unsigned int depth)
-{
-	coronal.data.resize(width);
-	for (int i = 0; i < width; i++)
-	{
-		coronal.data[i] = new float[depth * height];
-	}
-}
-
-void Views::InitializeSagittal(unsigned int height, unsigned int depth, unsigned int width)
-{
-	sagittal.data.resize(height);
-	for (int i = 0; i < height; i++)
-	{
-		sagittal.data[i] = new float[width * depth];
-	}
-}
-
-void Views::InitializeAxial(unsigned int depth, unsigned int width, unsigned int height)
-{
-	axial.data.resize(depth);
-	for (int i = 0; i < depth; i++)
-	{
-		axial.data[i] = new float[width * height];
-	}
-}
