@@ -527,6 +527,8 @@
     <ClInclude Include="src\vendor\stbi_image\stb_image.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\TextureShader.frag" />
+    <None Include="res\shaders\TextureShader.vert" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
