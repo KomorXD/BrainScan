@@ -2,6 +2,7 @@
 
 #include "IScene.hpp"
 #include "../ui/IUIPanel.hpp"
+#include "../OpenGL.hpp"
 
 #include <vector>
 #include <memory>
