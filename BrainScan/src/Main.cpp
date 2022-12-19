@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 	//App::GetInstance().Run();	
 
 	Scan s;
-	s.LoadFromFile("D:\\Projekty\\BrainScan\\NiftiFiles\\avg152T1_LR_nifti.nii");
+	s.LoadFromFile("D:\\Projekty\\BrainScan\\NiftiFiles\\ircad_e01_orig.nii");
 
 	return 0;
 }

@@ -20,5 +20,5 @@ public:
 	virtual bool LoadFromFile(std::string inputImageFileName) override;
 
 private:
-	void PrintBuffer();
+	void RewriteBuffer();
 };

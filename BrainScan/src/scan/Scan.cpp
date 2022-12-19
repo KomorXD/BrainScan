@@ -6,6 +6,9 @@
 #include <string>
 #include <iostream>
 
+//#include <iostream>
+//#include <fstream>
+
 namespace sitk = itk::simple;
 bool Scan::SaveToFile(std::string inputImageFileName)
 {
@@ -22,7 +25,7 @@ bool Scan::LoadFromFile(std::string inputImageFileName)
 	try
 	{
 		sitk::ImageFileReader reader;
-		reader.SetFileName(std::string(inputImageFileName));
+		reader.SetFileName(inputImageFileName);
 		sitk::Image image = reader.Execute();
 
 		if (image.GetDimension() != Dimension)
@@ -32,13 +35,14 @@ bool Scan::LoadFromFile(std::string inputImageFileName)
 		}
 
 		sitk::CastImageFilter caster;
-		caster.SetOutputPixelType(sitk::sitkLabelUInt8);
+		caster.SetOutputPixelType(sitk::sitkInt32);
 		m_image = caster.Execute(image);
-		sitk::WriteImage(m_image, "blob.png");
+		
 	}
 	catch (const std::exception& e)
 	{
-		LOG_ERROR("{}", e.what());
+		LOG_CRITICAL("{}", e.what());
+		return false;
 	}
 
 	
@@ -46,13 +50,15 @@ bool Scan::LoadFromFile(std::string inputImageFileName)
 	m_height = m_image.GetHeight();
 	m_width = m_image.GetWidth();
 
-	//PrintBuffer();
-	//sitk::WriteImage(m_image, "blob.png");
-    return false;
+	RewriteBuffer();
+    return true;
 }
 
-void Scan::PrintBuffer()
+void Scan::RewriteBuffer()
 {
+	//std::ofstream myfile;
+	//myfile.open("example.csv");
+
 	std::vector<unsigned int> pixelIndex;
 	for (int d = 0; d < m_depth; d++)
 	{
@@ -64,8 +70,11 @@ void Scan::PrintBuffer()
 								 static_cast<unsigned int>(h),
 								 static_cast<unsigned int>(d)
 								} };
-				//myfile << m_image.GetPixelAsInt32(pixelIndex) << ";";
+				//myfile << abs(m_image.GetPixelAsInt32(pixelIndex)) << ";";
 			}
+			//myfile << std::endl;
 		}
+		//myfile << std::endl;
 	}
+	//myfile.close();
 }
