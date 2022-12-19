@@ -36,6 +36,27 @@ class VertexBuffer
 		uint32_t m_ID;
 };
 
+class IndexBuffer
+{
+	public:
+		IndexBuffer(const uint32_t* data, uint32_t count);
+		IndexBuffer(const IndexBuffer& other) = delete;
+		IndexBuffer(IndexBuffer&& other) noexcept;
+		~IndexBuffer();
+
+		IndexBuffer& operator= (const IndexBuffer& other) = delete;
+		IndexBuffer& operator= (IndexBuffer&& other) noexcept;
+
+		void Bind() const;
+		void Unbind() const;
+
+		inline const uint32_t GetCount() const { return m_Count; }
+
+	private:
+		uint32_t m_ID;
+		uint32_t m_Count;
+};
+
 struct VertexBufferElement
 {
 	uint32_t type;
@@ -83,6 +104,25 @@ class VertexBufferLayout
 	private:
 		std::vector<VertexBufferElement> m_Elements;
 		uint32_t m_Stride;
+};
+
+class VertexArray
+{
+	public:
+		VertexArray();
+		VertexArray(const VertexArray& other) = delete;
+		VertexArray(VertexArray&& other) noexcept;
+		~VertexArray();
+
+		VertexArray& operator= (const VertexArray& other) = delete;
+		VertexArray& operator= (VertexArray&& other) noexcept;
+
+		void AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
+		void Bind() const;
+		void Unbind() const;
+
+	private:
+		uint32_t m_ID;
 };
 
 class Shader
@@ -151,6 +191,8 @@ class Framebuffer
 		void UnbindBuffer()					const;
 		void UnbindTexture()				const;
 		void UnbindRenderBuffer()			const;
+
+		inline uint32_t GetTextureID() const { return m_TextureID; }
 
 		bool IsComplete() const;
 

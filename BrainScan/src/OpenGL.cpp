@@ -69,6 +69,49 @@ void VertexBuffer::UpdateBuffer(const void* data, uint32_t size)
 	GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
 }
 
+IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
+	: m_ID(0), m_Count(count)
+{
+	GLCall(glGenBuffers(1, &m_ID));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+}
+
+IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+IndexBuffer::~IndexBuffer()
+{
+	if (m_ID != 0)
+		GLCall(glDeleteBuffers(1, &m_ID));
+}
+
+IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	this->m_ID = other.m_ID;
+	this->m_Count = other.m_Count;
+
+	other.m_ID = 0;
+	other.m_Count = 0;
+
+	return *this;
+}
+
+void IndexBuffer::Bind() const
+{
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID));
+}
+
+void IndexBuffer::Unbind() const
+{
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+}
+
 uint32_t VertexBufferElement::GetSizeOfType(uint32_t t)
 {
 	switch(t)
@@ -84,6 +127,65 @@ uint32_t VertexBufferElement::GetSizeOfType(uint32_t t)
 VertexBufferLayout::VertexBufferLayout()
 	: m_Stride(0)
 {}
+
+VertexArray::VertexArray()
+	: m_ID(0)
+{
+	GLCall(glGenVertexArrays(1, &m_ID));
+	GLCall(glBindVertexArray(m_ID));
+}
+
+VertexArray::VertexArray(VertexArray&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+VertexArray::~VertexArray()
+{
+	if (m_ID != 0)
+		GLCall(glDeleteVertexArrays(1, &m_ID));
+}
+
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	this->m_ID = other.m_ID;
+
+	other.m_ID = 0;
+
+	return *this;
+}
+
+void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
+{
+	Bind();
+	vb.Bind();
+
+	const auto& elements = layout.GetElements();
+	uint32_t offset = 0;
+
+	for (uint32_t i = 0; i < elements.size(); ++i)
+	{
+		const VertexBufferElement& element = elements[i];
+
+		GLCall(glEnableVertexAttribArray(i));
+		GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (const void*)offset));
+
+		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
+	}
+}
+
+void VertexArray::Bind() const
+{
+	GLCall(glBindVertexArray(m_ID));
+}
+
+void VertexArray::Unbind() const
+{
+	GLCall(glBindVertexArray(0));
+}
 
 Shader::Shader(const std::string& vs, const std::string& fs)
 	: m_ID(0)
