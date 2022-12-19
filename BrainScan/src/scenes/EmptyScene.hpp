@@ -12,6 +12,15 @@ class EmptyScene : public IScene
 	private:
 		std::vector<std::unique_ptr<IUIPanel>> m_Panels;
 
+		/*
+			TEMPORARY
+		*/
+		Framebuffer m_FB;
+		std::shared_ptr<Texture> m_Texture;
+		std::unique_ptr<VertexArray> m_VAO;
+		std::unique_ptr<IndexBuffer> m_IBO;
+		std::unique_ptr<Shader> m_Shader;
+
 	public:
 		EmptyScene();
 		virtual ~EmptyScene() = default;
