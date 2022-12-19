@@ -10,13 +10,13 @@ class UIScanImageWindow : public IUIPanel
 {
 	private:
 		int m_ID;
-		std::unique_ptr<Texture> m_ScanTexture;
+		std::shared_ptr<Texture> m_ScanTexture;
 
 	public:
 		UIScanImageWindow(int scanID, float posX, float posY, float height);
 		virtual ~UIScanImageWindow() = default;
 
-		void SetScanTexture(std::unique_ptr<Texture>&& text);
+		void SetScanTexture(std::shared_ptr<Texture>& text);
 
 		virtual void Render() override;
 };
