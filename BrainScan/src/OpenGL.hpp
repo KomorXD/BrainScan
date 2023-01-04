@@ -20,7 +20,12 @@ class VertexBuffer
 {
 	public:
 		VertexBuffer(const void* data, uint32_t size);
+		VertexBuffer(const VertexBuffer& other) = delete;
+		VertexBuffer(VertexBuffer&& other) noexcept;
 		~VertexBuffer();
+
+		VertexBuffer& operator= (const VertexBuffer& other) = delete;
+		VertexBuffer& operator= (VertexBuffer&& other) noexcept;
 
 		void Bind() const;
 		void Unbind() const;
@@ -35,12 +40,17 @@ class IndexBuffer
 {
 	public:
 		IndexBuffer(const uint32_t* data, uint32_t count);
+		IndexBuffer(const IndexBuffer& other) = delete;
+		IndexBuffer(IndexBuffer&& other) noexcept;
 		~IndexBuffer();
+
+		IndexBuffer& operator= (const IndexBuffer& other) = delete;
+		IndexBuffer& operator= (IndexBuffer&& other) noexcept;
 
 		void Bind() const;
 		void Unbind() const;
 
-		inline uint32_t GetCount() const { return m_Count; }
+		inline const uint32_t GetCount() const { return m_Count; }
 
 	private:
 		uint32_t m_ID;
@@ -64,7 +74,7 @@ class VertexBufferLayout
 		template<typename T>
 		void Push(uint32_t count)
 		{
-			static_assert(true);
+			// static_assert(false);
 		}
 
 		template<>
@@ -88,8 +98,6 @@ class VertexBufferLayout
 			m_Stride += count * sizeof(GLbyte);
 		}
 
-		void Clear();
-
 		inline const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
 		inline const uint32_t GetStride() const { return m_Stride; }
 
@@ -102,16 +110,19 @@ class VertexArray
 {
 	public:
 		VertexArray();
+		VertexArray(const VertexArray& other) = delete;
+		VertexArray(VertexArray&& other) noexcept;
 		~VertexArray();
 
-		void AddBuffer(const VertexBuffer& vbo, const VertexBufferLayout& layout, uint32_t divisor = 0);
+		VertexArray& operator= (const VertexArray& other) = delete;
+		VertexArray& operator= (VertexArray&& other) noexcept;
 
+		void AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
 		void Bind() const;
 		void Unbind() const;
 
 	private:
 		uint32_t m_ID;
-		uint32_t m_CurrentAttribID = 0;
 };
 
 class Shader
@@ -123,9 +134,7 @@ class Shader
 		void Bind() const;
 		void Unbind() const;
 
-		void SetUniformMat4(const std::string& name, const glm::mat4& matrix);
-		void SetUniformVec3(const std::string& name, const glm::vec3& vec);
-		void SetUniformVec2(const std::string& name, const glm::vec2& vec);
+		void SetUniformInt32(const std::string& name, int32_t val);
 
 	private:
 		uint32_t m_ID;
@@ -160,4 +169,35 @@ class Texture
 		int			   m_Height;
 		int			   m_BPP;
 		std::string	   m_Path;
+};
+
+class Framebuffer
+{
+	public:
+		Framebuffer();
+		Framebuffer(const Framebuffer& other) = delete;
+		Framebuffer(Framebuffer&& other) noexcept;
+		~Framebuffer();
+
+		Framebuffer& operator= (const Framebuffer& other) = delete;
+		Framebuffer& operator= (Framebuffer&& other) noexcept;
+
+		void AttachTexture(uint32_t width, uint32_t height);
+		void AttachRenderBuffer(uint32_t width, uint32_t height);
+
+		void BindBuffer()					const;
+		void BindTexture(uint32_t slot = 0)	const;
+		void BindRenderBuffer()				const;
+		void UnbindBuffer()					const;
+		void UnbindTexture()				const;
+		void UnbindRenderBuffer()			const;
+
+		inline uint32_t GetTextureID() const { return m_TextureID; }
+
+		bool IsComplete() const;
+
+	private:
+		uint32_t m_ID			  = 0;
+		uint32_t m_TextureID	  = 0;
+		uint32_t m_RenderbufferID = 0;
 };

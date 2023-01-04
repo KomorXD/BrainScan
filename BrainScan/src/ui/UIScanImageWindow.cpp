@@ -1,6 +1,7 @@
 #include "UIScanImageWindow.hpp"
 #include "imgui/imgui.h"
 #include "../Core.hpp"
+#include "../OpenGL.hpp"
 
 #include <format>
 
@@ -15,19 +16,33 @@ UIScanImageWindow::UIScanImageWindow(int scanID, float posX, float posY, float h
 	LOG_INFO("Initialized scan panel panel #{}", scanID);
 }
 
+void UIScanImageWindow::SetScanTexture(std::shared_ptr<Texture>& text)
+{
+	m_ScanTexture = text;
+}
+
 void UIScanImageWindow::Render()
 {
-	ImVec2 windowPos = ImGui::GetMainViewport()->Pos;
+	ImGui::SetNextWindowSize(ImVec2(m_Width, m_Height));
+	ImGui::SetNextWindowPos(ImVec2(m_PosX, m_PosY));
 
-	ImGui::SetNextWindowSize(ImVec2(m_Width, m_Height), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos(ImVec2(m_PosX, m_PosY), ImGuiCond_FirstUseEver);
-
-	ImGui::Begin(std::format("Scan image axis #{}", m_ID).c_str(), nullptr, ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin(std::format("Scan image axis #{}", m_ID).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 	Update();
 
 	ImGui::BeginChild(std::format("scan#{}", m_ID).c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
-	ImGui::Text("Area for a scan");
+
+	if (ImGui::IsWindowHovered())
+	{
+		LOG_WARN("Scan #{} hovered on.", m_ID);
+	}
+
+	if(m_ScanTexture)
+	{
+		// TEMPORARY HARD CODED 4
+		ImGui::Image((void*)(intptr_t)4, ImVec2(m_Width - 32.0f, m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
+	}
+	
 	ImGui::EndChild();
 
 	ImGui::End();

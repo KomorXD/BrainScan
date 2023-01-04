@@ -1,5 +1,6 @@
 #include "UIMenuBar.hpp"
 #include "imgui/imgui.h"
+#include "imgui/ImGuiFileDialog.h"
 #include "../Core.hpp"
 
 UIMenuBar::UIMenuBar()
@@ -27,7 +28,7 @@ void UIMenuBar::Render()
 		{
 			if(ImGui::MenuItem("Open", "Ctrl + O"))
 			{
-				LOG_INFO("File -> Open");
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseScan", "Open scan file", ".hpp,.cpp,.h,.c", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
 			}
 
 			if(ImGui::MenuItem("Save", "Ctrl + S"))
@@ -74,5 +75,17 @@ void UIMenuBar::Render()
 		}
 
 		ImGui::EndMainMenuBar();
+	}
+
+	if (ImGuiFileDialog::Instance()->Display("ChooseScan", 32, ImVec2(600.0f, 400.0f)))
+	{
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+
+			LOG_TRACE("Opened file: {}", filePathName);
+		}
+
+		ImGuiFileDialog::Instance()->Close();
 	}
 }

@@ -1,20 +1,15 @@
 #include "App.hpp"
+#include "Logger.hpp"
 #include "OpenGL.hpp"
 #include "scenes/EmptyScene.hpp"
 
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_glfw.h>
-#include <imgui/ImGuiFileDialog.h>
 
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <format>
-
-static void glfw_error_callback(int error, const char* description)
-{
-	std::cerr << std::format("GLFW error #{} - {}", error, description) << "\n";
-}
 
 App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 {
@@ -25,7 +20,11 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 		return;
 	}
 	
-	glfwSetErrorCallback(glfw_error_callback);
+	glfwSetErrorCallback([](int32_t error, const char* description)
+	{
+		LOG_WARN("GLFW has thrown an error #{}: {}", error, description);
+	});
+	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
@@ -33,7 +32,8 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 
 	if(!m_Window)
 	{
-		std::cerr << "Failed to create a window.\n";
+		LOG_CRITICAL("Failed to create a window.");
+
 		glfwTerminate();
 
 		return;
@@ -44,7 +44,7 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 	
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cerr << "Failed to load GLAD.\n";
+		LOG_CRITICAL("Failed to load GLAD.");
 
 		glfwTerminate();
 
@@ -58,7 +58,7 @@ void App::Run()
 {
 	if(!s_Instance)
 	{
-		std::cerr << "Something went wrong in the app's initialization. The program will now terminate.\n";
+		LOG_CRITICAL("Something went wrong in the app's initialization. The program will now terminate.");
 
 		return;
 	}
@@ -73,21 +73,11 @@ void App::Run()
 
 	IM_ASSERT(font != nullptr);
 
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
 	ImGui::StyleColorsDark();
 
 	ImGuiStyle& style = ImGui::GetStyle();
-
-	if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
 
 	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
 	ImGui_ImplOpenGL3_Init();
@@ -100,15 +90,6 @@ void App::Run()
 	
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		GLFWwindow* backup_current_context = glfwGetCurrentContext();
-
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-		glfwMakeContextCurrent(backup_current_context);
-	}
 
 	while(!glfwWindowShouldClose(m_Window))
 	{
@@ -129,15 +110,6 @@ void App::Run()
 		ImGui::Render();
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
 
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);

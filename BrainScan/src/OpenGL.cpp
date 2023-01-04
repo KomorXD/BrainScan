@@ -27,15 +27,30 @@ VertexBuffer::VertexBuffer(const void* data, uint32_t size)
 {
 	GLCall(glGenBuffers(1, &m_ID));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_ID));
-	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+}
+
+VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
+{
+	*this = std::move(other);
 }
 
 VertexBuffer::~VertexBuffer()
 {
-	if(m_ID != 0)
-	{
+	if (m_ID != 0)
 		GLCall(glDeleteBuffers(1, &m_ID));
-	}
+}
+
+VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	this->m_ID = other.m_ID;
+
+	other.m_ID = 0;
+
+	return *this;
 }
 
 void VertexBuffer::Bind() const
@@ -50,7 +65,8 @@ void VertexBuffer::Unbind() const
 
 void VertexBuffer::UpdateBuffer(const void* data, uint32_t size)
 {
-	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
+	Bind();
+	GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
 }
 
 IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
@@ -58,15 +74,32 @@ IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
 {
 	GLCall(glGenBuffers(1, &m_ID));
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID));
-	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+}
+
+IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
+{
+	*this = std::move(other);
 }
 
 IndexBuffer::~IndexBuffer()
 {
-	if(m_ID != 0)
-	{
+	if (m_ID != 0)
 		GLCall(glDeleteBuffers(1, &m_ID));
-	}
+}
+
+IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	this->m_ID = other.m_ID;
+	this->m_Count = other.m_Count;
+
+	other.m_ID = 0;
+	other.m_Count = 0;
+
+	return *this;
 }
 
 void IndexBuffer::Bind() const
@@ -79,6 +112,22 @@ void IndexBuffer::Unbind() const
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
 
+uint32_t VertexBufferElement::GetSizeOfType(uint32_t t)
+{
+	switch(t)
+	{
+		case GL_FLOAT:			return sizeof(GLfloat);
+		case GL_UNSIGNED_INT:	return sizeof(GLuint);
+		case GL_UNSIGNED_BYTE:	return sizeof(GLbyte);
+	}
+
+	return 0;
+}
+
+VertexBufferLayout::VertexBufferLayout()
+	: m_Stride(0)
+{}
+
 VertexArray::VertexArray()
 	: m_ID(0)
 {
@@ -86,32 +135,46 @@ VertexArray::VertexArray()
 	GLCall(glBindVertexArray(m_ID));
 }
 
+VertexArray::VertexArray(VertexArray&& other) noexcept
+{
+	*this = std::move(other);
+}
+
 VertexArray::~VertexArray()
 {
-	if(m_ID != 0)
+	if (m_ID != 0)
 		GLCall(glDeleteVertexArrays(1, &m_ID));
 }
 
-void VertexArray::AddBuffer(const VertexBuffer& vbo, const VertexBufferLayout& layout, uint32_t divisor)
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	this->m_ID = other.m_ID;
+
+	other.m_ID = 0;
+
+	return *this;
+}
+
+void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
 {
 	Bind();
-	vbo.Bind();
+	vb.Bind();
 
 	const auto& elements = layout.GetElements();
 	uint32_t offset = 0;
 
-	for(uint32_t i = 0; i < elements.size(); ++i)
+	for (uint32_t i = 0; i < elements.size(); ++i)
 	{
-		const auto& element = elements[i];
+		const VertexBufferElement& element = elements[i];
 
-		GLCall(glEnableVertexAttribArray(i + m_CurrentAttribID));
-		GLCall(glVertexAttribPointer(i + m_CurrentAttribID, element.count, element.type, element.normalized, layout.GetStride(), (const void*)offset));
-		GLCall(glVertexAttribDivisor(i + m_CurrentAttribID, divisor));
+		GLCall(glEnableVertexAttribArray(i));
+		GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (const void*)offset));
 
 		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
 	}
-
-	m_CurrentAttribID += elements.size();
 }
 
 void VertexArray::Bind() const
@@ -145,19 +208,9 @@ void Shader::Unbind() const
 	GLCall(glUseProgram(0));
 }
 
-void Shader::SetUniformMat4(const std::string& name, const glm::mat4& matrix)
+void Shader::SetUniformInt32(const std::string& name, int32_t val)
 {
-	GLCall(glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
-}
-
-void Shader::SetUniformVec3(const std::string& name, const glm::vec3& vec)
-{
-	GLCall(glUniform3f(GetUniformLocation(name), vec.x, vec.y, vec.z));
-}
-
-void Shader::SetUniformVec2(const std::string& name, const glm::vec2& vec)
-{
-	GLCall(glUniform2f(GetUniformLocation(name), vec.x, vec.y));
+	GLCall(glUniform1i(GetUniformLocation(name), val));
 }
 
 std::string Shader::ShaderParse(const std::string& filepath)
@@ -267,32 +320,10 @@ int32_t Shader::GetUniformLocation(const std::string& name)
 	return location;
 }
 
-VertexBufferLayout::VertexBufferLayout()
-	: m_Stride(0)
-{}
-
-void VertexBufferLayout::Clear()
-{
-	m_Elements.clear();
-	m_Stride = 0;
-}
-
-uint32_t VertexBufferElement::GetSizeOfType(uint32_t t)
-{
-	switch(t)
-	{
-		case GL_FLOAT:			return sizeof(GLfloat);
-		case GL_UNSIGNED_INT:	return sizeof(GLuint);
-		case GL_UNSIGNED_BYTE:	return sizeof(GLbyte);
-	}
-
-	return 0;
-}
-
 Texture::Texture(const std::string& filepath)
 	: m_RendererID(0), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0), m_Path(filepath)
 {
-	stbi_set_flip_vertically_on_load(1);
+	stbi_set_flip_vertically_on_load(0);
 	m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
 	GLCall(glGenTextures(1, &m_RendererID));
@@ -340,4 +371,113 @@ int Texture::GetHeight() const
 std::string Texture::GetPath() const
 {
 	return m_Path;
+}
+
+Framebuffer::Framebuffer()
+{
+	GLCall(glGenFramebuffers(1, &m_ID));
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, m_ID));
+}
+
+Framebuffer::Framebuffer(Framebuffer&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+Framebuffer::~Framebuffer()
+{
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+	GLCall(glDeleteFramebuffers(1, &m_ID));
+
+	if (m_TextureID != 0)
+	{
+		GLCall(glBindTexture(GL_TEXTURE_2D, m_TextureID));
+		GLCall(glDeleteTextures(1, &m_TextureID));
+	}
+
+	if (m_RenderbufferID != 0)
+	{
+		GLCall(glBindRenderbuffer(GL_RENDERBUFFER, 0));
+		GLCall(glDeleteRenderbuffers(1, &m_RenderbufferID));
+	}
+}
+
+Framebuffer& Framebuffer::operator=(Framebuffer&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	this->m_ID = other.m_ID;
+	this->m_TextureID = other.m_TextureID;
+	this->m_RenderbufferID = other.m_RenderbufferID;
+
+	other.m_ID = 0;
+	other.m_TextureID = 0;
+	other.m_RenderbufferID = 0;
+
+	return *this;
+}
+
+void Framebuffer::AttachTexture(uint32_t width, uint32_t height)
+{
+	GLCall(glGenTextures(1, &m_TextureID));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_TextureID));
+
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr));
+
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+	GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureID, 0));
+
+	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+}
+
+void Framebuffer::AttachRenderBuffer(uint32_t width, uint32_t height)
+{
+	GLCall(glGenRenderbuffers(1, &m_RenderbufferID));
+	GLCall(glBindRenderbuffer(GL_RENDERBUFFER, m_RenderbufferID));
+
+	GLCall(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+	GLCall(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderbufferID));
+
+	GLCall(glBindRenderbuffer(GL_RENDERBUFFER, 0));
+}
+
+void Framebuffer::BindBuffer() const
+{
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, m_ID));
+}
+
+void Framebuffer::BindTexture(uint32_t slot) const
+{
+	GLCall(glActiveTexture(GL_TEXTURE0 + slot));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_TextureID));
+}
+
+void Framebuffer::BindRenderBuffer() const
+{
+	GLCall(glBindRenderbuffer(GL_RENDERBUFFER, m_RenderbufferID));
+}
+
+void Framebuffer::UnbindBuffer() const
+{
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+void Framebuffer::UnbindTexture() const
+{
+	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+}
+
+void Framebuffer::UnbindRenderBuffer() const
+{
+	GLCall(glBindRenderbuffer(GL_RENDERBUFFER, 0));
+}
+
+bool Framebuffer::IsComplete() const
+{
+	GLCall(bool complete = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+	return complete;
 }
