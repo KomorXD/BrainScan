@@ -4,6 +4,6 @@
 class Serializable
 {
 public:
-	virtual bool SaveToFile(std::string FileName) = 0;
-	virtual bool LoadFromFile(std::string FileName) = 0;
+	virtual bool SaveToFile(const std::string & fileName) = 0;
+	virtual bool LoadFromFile(const std::string & fileName) = 0;
 };
