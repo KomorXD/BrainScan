@@ -342,6 +342,27 @@ Texture::Texture(const std::string& filepath)
 		stbi_image_free(m_LocalBuffer);
 }
 
+Texture::Texture(float* data, uint32_t width, uint32_t height)
+	: m_RendererID(0), m_LocalBuffer(nullptr), m_Width(width), m_Height(height), m_BPP(0), m_Path("")
+{
+	if (!data)
+	{
+		return;
+	}
+
+	GLCall(glGenTextures(1, &m_RendererID));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
+
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data));
+	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
+	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+}
+
 Texture::~Texture()
 {
 	GLCall(glDeleteTextures(1, &m_RendererID));

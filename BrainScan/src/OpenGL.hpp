@@ -151,6 +151,7 @@ class Texture
 {
 	public:
 		Texture(const std::string& filepath);
+		Texture(float* data, uint32_t width, uint32_t height);
 		~Texture();
 
 		void Bind(unsigned int slot = 0) const;
