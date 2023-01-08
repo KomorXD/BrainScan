@@ -11,6 +11,8 @@ EmptyScene::EmptyScene()
 {
 	FUNC_PROFILE();
 
+	m_Scan.LoadFromFile("E:\\Projects\\ASFDA\\BrainScan\\test_nifti.nii");
+
 	m_FB.UnbindBuffer();
 
 	std::array<float, 16> vertices =
@@ -41,9 +43,11 @@ EmptyScene::EmptyScene()
 	m_VAO->Unbind();
 	vbo.Unbind();
 	m_IBO->Unbind();
+
+	Views v = m_Scan.GetViews();
 	
 	m_Shader  = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
-	m_Texture = std::make_shared<Texture>("res/textures/scan3.jpg");
+	m_AxialTexture = std::make_shared<Texture>(v.axial.GetBuffer(60), v.axial.GetWidth(), v.axial.GetHeight());
 
 	m_Panels.emplace_back(std::make_unique<UIMenuBar>());
 	m_Panels.emplace_back(std::make_unique<UIToolBar>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
@@ -65,19 +69,19 @@ EmptyScene::EmptyScene()
 
 	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(1, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(),								  scanPanelHeight));
 	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_Texture);
+	scanPanel->SetScanTexture(m_AxialTexture);
 
 	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(2, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(),								  scanPanelHeight));
 	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_Texture);
+	scanPanel->SetScanTexture(m_AxialTexture);
 
 	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(3, m_Panels.back()->GetPosX() - m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight(), scanPanelHeight));
 	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_Texture);
+	scanPanel->SetScanTexture(m_AxialTexture);
 
 	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(4, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(),								  scanPanelHeight));
 	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_Texture);
+	scanPanel->SetScanTexture(m_AxialTexture);
 
 	m_FB.BindBuffer();
 	m_FB.AttachTexture((uint32_t)scanPanel->GetWidth() * 3, (uint32_t)scanPanel->GetHeight() * 2);
@@ -100,7 +104,7 @@ void EmptyScene::Render()
 	m_VAO->Bind();
 	m_IBO->Bind();
 	m_Shader->Bind();
-	m_Texture->Bind();
+	m_AxialTexture->Bind();
 
 	GLCall(glDrawElements(GL_TRIANGLES, m_IBO->GetCount(), GL_UNSIGNED_INT, nullptr));
 
