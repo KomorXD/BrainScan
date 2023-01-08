@@ -15,7 +15,7 @@ View::~View()
 {
 	for (size_t i = 0; i < m_Depth; i++)
 	{
-		delete[] m_Data[i];
+//		delete[] m_Data[i];
 	}
 }
 
