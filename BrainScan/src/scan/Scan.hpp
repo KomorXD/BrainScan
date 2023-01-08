@@ -21,6 +21,8 @@ public:
 	virtual bool SaveToFile(const std::string & fileName) override;
 	virtual bool LoadFromFile(const std::string & inputImageFileName) override;
 
+	inline Views GetViews() { return m_Views; }
+
 private:
 	void CreateViews();
 	void PopulateAxialView();
