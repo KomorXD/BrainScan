@@ -13,9 +13,9 @@ void Views::InitializeViews(unsigned int axialWidth, unsigned int axialHeight, u
 
 View::~View()
 {
-	for (size_t i = 0; i < m_Depth; i++)
+	for (int i = 0; i < m_Data.size(); i++)
 	{
-//		delete[] m_Data[i];
+		delete[] m_Data[i];
 	}
 }
 
