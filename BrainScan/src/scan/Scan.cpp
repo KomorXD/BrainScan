@@ -16,6 +16,52 @@ bool Scan::SaveToFile(const std::string & inputImageFileName)
     return false;
 }
 
+void Scan::CreateMockData()
+{
+	sitk::PixelIDValueEnum pixelType = sitk::sitkInt32;
+	std::vector<unsigned int> imageSize(3, 128);
+
+	// Create an image
+	//sitk::Image image(imageSize, pixelType);
+	
+	// Create a face image
+	std::vector<double> faceSize(3, 64.0);
+	std::vector<double> faceCenter(3, 64.0);;
+	sitk::Image face = sitk::GaussianSource(pixelType, imageSize, faceSize, faceCenter);
+
+	// Create eye images
+	std::vector<double> eyeSize(3, 5.0);
+	std::vector<double> eye1Center(3, 48.0);
+	std::vector<double> eye2Center = { 80.0, 48.0 , 52.0 };
+	sitk::Image eye1 = sitk::GaussianSource(pixelType, imageSize, eyeSize, eye1Center, 150);
+	sitk::Image eye2 = sitk::GaussianSource(pixelType, imageSize, eyeSize, eye2Center, 150);
+
+	// Apply the eyes to the face
+	face = face - eye1 - eye2;
+	face = sitk::BinaryThreshold(face, 200, 255, 255);
+
+	// Create the mouth
+	std::vector<double> mouthRadii = { 30.0, 20.0 , 25.0 };
+	std::vector<double> mouthCenter = { 64.0, 76.0 , 70.0 };
+	sitk::Image mouth = 255 - sitk::BinaryThreshold(
+		sitk::GaussianSource(pixelType, imageSize, mouthRadii, mouthCenter),
+		200, 255, 255);
+
+	// Paste the mouth onto the face
+	std::vector<unsigned int> mouthSize = { 64, 18 , 20 };
+	std::vector<int> mouthLoc = { 32, 76 , 14 };
+	face = sitk::Paste(face, mouth, mouthSize, mouthLoc, mouthLoc);
+
+	// Apply the face to the original image
+
+
+	sitk::CastImageFilter caster;
+	caster.SetOutputPixelType(sitk::sitkInt32);
+	m_Image = caster.Execute(face);
+
+	ConvertToInternalViews();
+}
+
 bool Scan::LoadFromFile(const std::string & inputImageFileName)
 {
 	const unsigned int                                 Dimension = 3;
@@ -45,14 +91,19 @@ bool Scan::LoadFromFile(const std::string & inputImageFileName)
 		return false;
 	}
 
+	ConvertToInternalViews();
+
+    return true;
+}
+
+void Scan::ConvertToInternalViews()
+{
 	unsigned int axialWidth = m_Image.GetWidth();
 	unsigned int axialHeight = m_Image.GetHeight();
 	unsigned int axialDepth = m_Image.GetDepth();
 	m_Views.InitializeViews(axialWidth, axialHeight, axialDepth);
 	FindMinMax(m_Views.axial);
 	CreateViews();
-
-    return true;
 }
 
 void Scan::CreateViews()
