@@ -14,11 +14,12 @@ public:
 	void InitializeView(unsigned int vectorSize,unsigned int bufferHeight,unsigned int bufferWidth);
 	~View();
 
-	unsigned int GetWidth();
-	unsigned int GetHeight();
-	unsigned int GetDepth();
 	float* GetBuffer(const unsigned int& index);
-	void PrintToCSV(const std::string& fileName);
+
+	inline std::vector<float*> GetData() { return m_Data; }
+	inline unsigned int GetWidth() { return m_Width; }
+	inline unsigned int GetHeight() { return m_Height; }
+	inline unsigned int GetDepth() { return m_Depth; }
 };
 
 class Views

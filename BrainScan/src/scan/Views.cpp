@@ -30,41 +30,6 @@ float* View::GetBuffer(const unsigned int& index)
 	return m_Data.at(index);
 }
 
-unsigned int View::GetWidth()
-{
-	return m_Width;
-}
-
-unsigned int View::GetHeight()
-{
-	return m_Height;
-}
-
-unsigned int View::GetDepth()
-{
-	return m_Depth;
-}
-
-void View::PrintToCSV(const std::string& fileName)
-{
-	std::ofstream myfile;
-	myfile.open(fileName + ".csv");
-	for (size_t d = 0; d < m_Depth; d++)
-	{
-		for (size_t h = 0; h < m_Height; h++)
-		{
-			for (size_t w = 0; w < m_Width; w++)
-			{
-				myfile << GetBuffer(d)[w + (m_Width * h)]<<";";
-			}
-			myfile << std::endl;
-		}
-		myfile << std::endl;
-	}
-	
-	myfile.close();
-}
-
 void View::InitializeView(unsigned int vectorSize, unsigned int bufferHeight, unsigned int bufferWidth)
 {
 	m_Depth = vectorSize;
