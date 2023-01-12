@@ -7,11 +7,14 @@
 #include "../ui/UIToolSettings.hpp"
 #include "../ui/UIScanImageWindow.hpp"
 
+const std::string bartekLocation = "D:\\Projekty\\BrainScan\\NiftiFiles\\test.nii";
+const std::string pawelLocation = "E:\\Projects\\ASFDA\\BrainScan\\test_nifti.nii";
+
 EmptyScene::EmptyScene()
 {
 	FUNC_PROFILE();
 
-	m_Scan.LoadFromFile("E:\\Projects\\ASFDA\\BrainScan\\test_nifti.nii");
+	m_Scan.LoadFromFile(bartekLocation);
 
 	m_FB.UnbindBuffer();
 
@@ -47,7 +50,7 @@ EmptyScene::EmptyScene()
 	Views v = m_Scan.GetViews();
 	
 	m_Shader  = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
-	m_AxialTexture = std::make_shared<Texture>(v.axial.GetBuffer(60), v.axial.GetWidth(), v.axial.GetHeight());
+	m_AxialTexture = std::make_shared<Texture>(v.axial.GetData()[0], v.axial.GetWidth(), v.axial.GetHeight());
 
 	m_Panels.emplace_back(std::make_unique<UIMenuBar>());
 	m_Panels.emplace_back(std::make_unique<UIToolBar>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
