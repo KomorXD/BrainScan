@@ -47,10 +47,10 @@ EmptyScene::EmptyScene()
 	vbo.Unbind();
 	m_IBO->Unbind();
 
-	Views v = m_Scan.GetViews();
+	View* v = m_Scan.GetSagittal();
 	
 	m_Shader  = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
-	m_AxialTexture = std::make_shared<Texture>(v.axial.GetData()[0], v.axial.GetWidth(), v.axial.GetHeight());
+	m_AxialTexture = std::make_shared<Texture>(v->GetData()[40], v->GetWidth(), v->GetHeight());
 
 	m_Panels.emplace_back(std::make_unique<UIMenuBar>());
 	m_Panels.emplace_back(std::make_unique<UIToolBar>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
