@@ -17,7 +17,7 @@ EmptyScene::EmptyScene()
 {
 	FUNC_PROFILE();
 
-	m_Scan.LoadFromFile(kubaLocation);
+	/*m_Scan.LoadFromFile(kubaLocation);
 
 	m_FB.UnbindBuffer();
 
@@ -49,12 +49,12 @@ EmptyScene::EmptyScene()
 	m_VAO->Unbind();
 	vbo.Unbind();
 	m_IBO->Unbind();
-
-	View* v = m_Scan.GetAxial();
 	
-	m_Shader  = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
+	//View* v = m_Scan.GetAxial();
+	
+	//m_Shader  = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
 	m_AxialTexture = std::make_shared<Texture>(v->GetData()[40], v->GetWidth(), v->GetHeight());
-
+	*/
 	m_Panels.emplace_back(std::make_unique<UIMenuBar>());
 	m_Panels.emplace_back(std::make_unique<UIToolBar>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
 
@@ -66,7 +66,7 @@ EmptyScene::EmptyScene()
 		LOG_INFO("Button #{} pressed.", 1);
 	});
 
-	//m_Panels.emplace_back(std::make_unique<UIToolSettings>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
+	/*m_Panels.emplace_back(std::make_unique<UIToolSettings>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
 
 	//float scanPanelHeight = m_Panels.back()->GetHeight() / 2.0f;
 	//UIScanImageWindow* scanPanel = nullptr;
@@ -85,14 +85,14 @@ EmptyScene::EmptyScene()
 
 	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(4, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(),								  scanPanelHeight));
 	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_AxialTexture);*/
+	scanPanel->SetScanTexture(m_AxialTexture);
 	
 
-	m_FB.BindBuffer();
+	//m_FB.BindBuffer();
 	//m_FB.AttachTexture((uint32_t)scanPanel->GetWidth() * 3, (uint32_t)scanPanel->GetHeight() * 2);
-	m_FB.AttachTexture(1, 1);
-	m_FB.UnbindBuffer();
-	
+	//m_FB.AttachTexture(1, 1);
+	//m_FB.UnbindBuffer();
+	*/
 }
 
 void EmptyScene::Input()
@@ -107,16 +107,16 @@ void EmptyScene::Update()
 
 void EmptyScene::Render()
 {
-	m_FB.BindBuffer();
-	m_VAO->Bind();
-	m_IBO->Bind();
-	m_Shader->Bind();
-	m_AxialTexture->Bind();
+	//m_FB.BindBuffer();
+	//m_VAO->Bind();
+	//m_IBO->Bind();
+	//m_Shader->Bind();
+	//m_AxialTexture->Bind();
 
-	GLCall(glDrawElements(GL_TRIANGLES, m_IBO->GetCount(), GL_UNSIGNED_INT, nullptr));
+	//GLCall(glDrawElements(GL_TRIANGLES, m_IBO->GetCount(), GL_UNSIGNED_INT, nullptr));
 
-	m_FB.UnbindBuffer();
-	m_FB.BindTexture(1);
+	//m_FB.UnbindBuffer();
+	//m_FB.BindTexture(1);
 
 	for(const auto& panel : m_Panels)
 	{
