@@ -9,6 +9,7 @@
 
 const std::string bartekLocation = "D:\\Projekty\\BrainScan\\NiftiFiles\\test.nii";
 const std::string pawelLocation = "E:\\Projects\\ASFDA\\BrainScan\\test_nifti.nii";
+const std::string mikolajLocation = "D:\\dupa\\test.nii";
 
 EmptyScene::EmptyScene()
 {

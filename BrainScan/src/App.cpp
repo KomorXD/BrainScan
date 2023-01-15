@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 #include "OpenGL.hpp"
 #include "scenes/EmptyScene.hpp"
+#include "scenes/AdvancedScene.hpp"
 
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -86,7 +87,7 @@ void App::Run()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	m_CurrentScene = std::make_unique<EmptyScene>();
+	m_CurrentScene = std::make_unique<AdvancedScene>();
 	
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

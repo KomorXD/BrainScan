@@ -1,7 +1,92 @@
 #include "AdvancedScene.hpp"
 #include "imgui/imgui.h"
+#include "../Core.hpp"
 
-#include <iostream>
+#include "../ui/UIMenuBar.hpp"
+#include "../ui/UIToolBar.hpp"
+#include "../ui/UIToolSettings.hpp"
+#include "../ui/UIScanImageWindow.hpp"
+
+AdvancedScene::AdvancedScene()
+{
+	FUNC_PROFILE();
+
+	LoadFormFile("D:\\dupa\\test.nii");
+
+	m_FB.UnbindBuffer();
+
+	std::array<float, 16> vertices =
+	{
+		// positions    // texture coords
+		 1.0f,  1.0f,   1.0f, 1.0f,
+		 1.0f, -1.0f,   1.0f, 0.0f,
+		-1.0f, -1.0f,   0.0f, 0.0f,
+		-1.0f,  1.0f,   0.0f, 1.0f
+	};
+
+	std::array<uint32_t, 6> indices =
+	{
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	m_VAO = std::make_unique<VertexArray>();
+	VertexBuffer vbo(vertices.data(), 16 * sizeof(float));
+	m_IBO = std::make_unique<IndexBuffer>(indices.data(), 6);
+
+	VertexBufferLayout layout;
+
+	layout.Push<float>(2);
+	layout.Push<float>(2);
+
+	m_VAO->AddBuffer(vbo, layout);
+	m_VAO->Unbind();
+	vbo.Unbind();
+	m_IBO->Unbind();
+
+	View* v = m_Scan.GetSagittal();
+
+	m_Shader = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
+	m_AxialTexture = std::make_shared<Texture>(v->GetData()[40], v->GetWidth(), v->GetHeight());
+
+	m_Panels.emplace_back(std::make_unique<UIMenuBar>());
+	m_Panels.emplace_back(std::make_unique<UIToolBar>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
+
+	for (int i = 0; i < 10; ++i)
+	{
+		auto tb = (UIToolBar*)m_Panels.back().get();
+
+		tb->AddButton([i]()
+			{
+				LOG_INFO("Button #{} pressed.", i + 1);
+			});
+	}
+
+	m_Panels.emplace_back(std::make_unique<UIToolSettings>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
+
+	float scanPanelHeight = m_Panels.back()->GetHeight() / 2.0f;
+	UIScanImageWindow* scanPanel = nullptr;
+
+	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(1, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(), scanPanelHeight));
+	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
+	scanPanel->SetScanTexture(m_AxialTexture);
+
+	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(2, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(), scanPanelHeight));
+	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
+	scanPanel->SetScanTexture(m_AxialTexture);
+
+	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(3, m_Panels.back()->GetPosX() - m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight(), scanPanelHeight));
+	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
+	scanPanel->SetScanTexture(m_AxialTexture);
+
+	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(4, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(), scanPanelHeight));
+	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
+	scanPanel->SetScanTexture(m_AxialTexture);
+
+	m_FB.BindBuffer();
+	m_FB.AttachTexture((uint32_t)scanPanel->GetWidth() * 3, (uint32_t)scanPanel->GetHeight() * 2);
+	m_FB.UnbindBuffer();
+}
 
 void AdvancedScene::Input()
 {
@@ -9,50 +94,35 @@ void AdvancedScene::Input()
 }
 
 void AdvancedScene::Update()
-{}
+{
+
+}
 
 void AdvancedScene::Render()
 {
-	ImGui::Begin("Window 1");
-	ImGui::Text("Placeholder 1");
+	m_FB.BindBuffer();
+	m_VAO->Bind();
+	m_IBO->Bind();
+	m_Shader->Bind();
+	m_AxialTexture->Bind();
 
-	if (ImGui::Button("Placeholder button 1"))
+	GLCall(glDrawElements(GL_TRIANGLES, m_IBO->GetCount(), GL_UNSIGNED_INT, nullptr));
+
+	m_FB.UnbindBuffer();
+	m_FB.BindTexture(1);
+
+	for (const auto& panel : m_Panels)
 	{
-		std::cout << "advanced xd 1\n";
+		panel->Render();
 	}
-
-	ImGui::End();
-
-	ImGui::Begin("Window 2");
-	ImGui::Text("Placeholder 2");
-
-	if (ImGui::Button("Placeholder button 2"))
-	{
-		std::cout << "advanced xd 2\n";
-	}
-
-	ImGui::End();
-
-	ImGui::Begin("Window 3");
-	ImGui::Text("Placeholder 3");
-
-	if (ImGui::Button("Placeholder button 3"))
-	{
-		std::cout << "advanced xd 3\n";
-	}
-
-	ImGui::End();
-
-	ImGui::Begin("Window 4");
-	ImGui::Text("Placeholder 4");
-
-	if (ImGui::Button("Placeholder button 4"))
-	{
-		std::cout << "advanced xd 4\n";
-	}
-
-	ImGui::End();
 }
 
 void AdvancedScene::SetTool()
-{}
+{
+
+}
+
+void AdvancedScene::LoadFormFile(const std::string& inputImageFileName)
+{
+	m_Scan.LoadFromFile(inputImageFileName);
+}
