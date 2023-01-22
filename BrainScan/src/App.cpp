@@ -97,6 +97,11 @@ void App::Run()
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 		
+		if (m_NextScene)
+		{
+			m_CurrentScene = std::move(m_NextScene);
+		}
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 
@@ -118,6 +123,11 @@ void App::Run()
 
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
+}
+
+void App::SetNextScene(std::unique_ptr<IScene>&& newScene)
+{
+	m_NextScene = std::move(newScene);
 }
 
 App& App::GetInstance()

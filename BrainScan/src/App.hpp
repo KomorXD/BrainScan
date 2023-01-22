@@ -14,6 +14,7 @@ class App
 
 		void Run();
 
+		void SetNextScene(std::unique_ptr<IScene>&& newScene);
 		static App& GetInstance();
 
 	private:
@@ -21,6 +22,6 @@ class App
 		
 		GLFWwindow* m_Window = nullptr;
 		std::unique_ptr<IScene> m_CurrentScene;
-
+		std::unique_ptr<IScene> m_NextScene = nullptr;
 		static inline App* s_Instance;
 };
