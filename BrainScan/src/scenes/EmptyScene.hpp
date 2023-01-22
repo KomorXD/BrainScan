@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IScene.hpp"
-#include "../ui/IUIPanel.hpp"
+#include "../ui/UIPanels.hpp"
 #include "../OpenGL.hpp"
 #include "../scan/Scan.hpp"
 
@@ -11,7 +11,8 @@
 class EmptyScene : public IScene
 {
 	private:
-		std::vector<std::unique_ptr<IUIPanel>> m_Panels;
+		std::unique_ptr<UIMenuBar> m_MenuBar;
+		std::unique_ptr<UIToolBar> m_ToolBar;
 
 	public:
 		EmptyScene();
