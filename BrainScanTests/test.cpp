@@ -1,18 +1,12 @@
 #include "pch.h"
+#include "scan/Scan.hpp"
+#include "Core.hpp"
 
-int xd(int a, int b)
+TEST(TestScanDimensions, ScanMockDataTests)
 {
-	return a / b;
-}
+    Scan scan;
+    scan.CreateMockData();
+    int atLeastThreeDims = scan.GetAxial()->GetDepth() * scan.GetAxial()->GetWidth() * scan.GetAxial()->GetHeight();
 
-TEST(TestCaseName, TestName) {
-  EXPECT_EQ(1, 1);
-  EXPECT_TRUE(true);
-}
-
-TEST(TestLoadsIndexBuffer, LoadIndexBuffer)
-{
-	int res = xd(6, 3);
-
-	EXPECT_EQ(res, 3) << "dupa";
+    EXPECT_GT(atLeastThreeDims, 0);
 }
