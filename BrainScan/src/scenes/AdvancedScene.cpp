@@ -2,127 +2,89 @@
 #include "imgui/imgui.h"
 #include "../Core.hpp"
 
-#include "../ui/UIMenuBar.hpp"
-#include "../ui/UIToolBar.hpp"
-#include "../ui/UIToolSettings.hpp"
-#include "../ui/UIScanImageWindow.hpp"
+const std::string bartekLocation = "D:\\Projekty\\BrainScan\\NiftiFiles\\test.nii";
+const std::string pawelLocation = "E:\\Projects\\ASFDA\\BrainScan\\test_nifti.nii";
 
 AdvancedScene::AdvancedScene()
 {
 	FUNC_PROFILE();
 
-	LoadFormFile("D:\\dupa\\test.nii");
+	m_Scan.LoadFromFile(pawelLocation);
 
-	m_FB.UnbindBuffer();
+	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
+	m_AxialTexture = std::make_shared<Texture>(m_Scan.GetAxial()->GetData()[40], m_Scan.GetAxial()->GetWidth(), m_Scan.GetAxial()->GetHeight());
+	m_CoronalTexture = std::make_shared<Texture>(m_Scan.GetCoronal()->GetData()[40], m_Scan.GetCoronal()->GetWidth(), m_Scan.GetCoronal()->GetHeight());
+	m_SagittalTexture = std::make_shared<Texture>(m_Scan.GetSagittal()->GetData()[40], m_Scan.GetSagittal()->GetWidth(), m_Scan.GetSagittal()->GetHeight());
 
-	std::array<float, 16> vertices =
-	{
-		// positions    // texture coords
-		 1.0f,  1.0f,   1.0f, 1.0f,
-		 1.0f, -1.0f,   1.0f, 0.0f,
-		-1.0f, -1.0f,   0.0f, 0.0f,
-		-1.0f,  1.0f,   0.0f, 1.0f
-	};
-
-	std::array<uint32_t, 6> indices =
-	{
-		0, 1, 2,
-		2, 3, 0
-	};
-
-	m_VAO = std::make_unique<VertexArray>();
-	VertexBuffer vbo(vertices.data(), 16 * sizeof(float));
-	m_IBO = std::make_unique<IndexBuffer>(indices.data(), 6);
-
-	VertexBufferLayout layout;
-
-	layout.Push<float>(2);
-	layout.Push<float>(2);
-
-	m_VAO->AddBuffer(vbo, layout);
-	m_VAO->Unbind();
-	vbo.Unbind();
-	m_IBO->Unbind();
-
-	View* v = m_Scan.GetSagittal();
-
-	m_Shader = std::make_unique<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
-	m_AxialTexture = std::make_shared<Texture>(v->GetData()[40], v->GetWidth(), v->GetHeight());
-
-	m_Panels.emplace_back(std::make_unique<UIMenuBar>());
-	m_Panels.emplace_back(std::make_unique<UIToolBar>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
+	m_MenuBar = std::make_unique<UIMenuBar>();
+	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
 
 	for (int i = 0; i < 10; ++i)
 	{
-		auto tb = (UIToolBar*)m_Panels.back().get();
-
-		tb->AddButton([i]()
+		m_ToolBar->AddButton([i]()
 			{
 				LOG_INFO("Button #{} pressed.", i + 1);
 			});
 	}
 
-	m_Panels.emplace_back(std::make_unique<UIToolSettings>(m_Panels.back()->GetPosX(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight()));
+	m_ToolSettings = std::make_unique<UIToolSettings>(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 
-	float scanPanelHeight = m_Panels.back()->GetHeight() / 2.0f;
-	UIScanImageWindow* scanPanel = nullptr;
+	float scanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
+	uint32_t sizeX = 0;
+	uint32_t sizeY = 0;
 
-	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(1, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(), scanPanelHeight));
-	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_AxialTexture);
+	m_ScanWindows.reserve(4);
 
-	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(2, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(), scanPanelHeight));
-	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_AxialTexture);
+	sizeX = m_Scan.GetAxial()->GetWidth();
+	sizeY = m_Scan.GetAxial()->GetHeight();
+	m_ScanWindows.emplace_back(1, m_ToolSettings->GetPosX() + m_ToolSettings->GetWidth(), m_ToolSettings->GetPosY(), scanPanelHeight);
+	m_ScanWindows.back().SetScanTexture(m_AxialTexture);
+	m_ScanWindows.back().SetShader(m_Shader);
 
-	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(3, m_Panels.back()->GetPosX() - m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY() + m_Panels.back()->GetHeight(), scanPanelHeight));
-	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_AxialTexture);
+	m_ScanWindows.emplace_back(2, m_ScanWindows.back().GetPosX() + m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY(), scanPanelHeight);
+	m_ScanWindows.back().SetScanTexture(m_CoronalTexture);
+	m_ScanWindows.back().SetShader(m_Shader);
 
-	m_Panels.emplace_back(std::make_unique<UIScanImageWindow>(4, m_Panels.back()->GetPosX() + m_Panels.back()->GetWidth(), m_Panels.back()->GetPosY(), scanPanelHeight));
-	scanPanel = (UIScanImageWindow*)m_Panels.back().get();
-	scanPanel->SetScanTexture(m_AxialTexture);
+	m_ScanWindows.emplace_back(3, m_ScanWindows.back().GetPosX() - m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY() + m_ScanWindows.back().GetHeight(), scanPanelHeight);
+	m_ScanWindows.back().SetScanTexture(m_SagittalTexture);
+	m_ScanWindows.back().SetShader(m_Shader);
 
-	m_FB.BindBuffer();
-	m_FB.AttachTexture((uint32_t)scanPanel->GetWidth() * 3, (uint32_t)scanPanel->GetHeight() * 2);
-	m_FB.UnbindBuffer();
+	m_ScanWindows.emplace_back(4, m_ScanWindows.back().GetPosX() + m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY(), scanPanelHeight);
+	m_ScanWindows.back().SetScanTexture(m_AxialTexture);
+	m_ScanWindows.back().SetShader(m_Shader);
+
+	UIScanImageWindow::InitializeBuffers((uint32_t)m_ScanWindows.back().GetWidth() * 3, (uint32_t)m_ScanWindows.back().GetHeight() * 2);
 }
 
 void AdvancedScene::Input()
 {
-
+	// TODO: handle user input
 }
 
 void AdvancedScene::Update()
 {
+	PathsPack paths;
 
+	paths.axialPaths = m_ScanWindows[0].GetBrushPaths();
+	paths.coronalPaths = m_ScanWindows[1].GetBrushPaths();
+	paths.sagittalPaths = m_ScanWindows[2].GetBrushPaths();
+
+	m_ToolSettings->LoadBrushPaths(paths);
 }
 
 void AdvancedScene::Render()
 {
-	m_FB.BindBuffer();
-	m_VAO->Bind();
-	m_IBO->Bind();
-	m_Shader->Bind();
-	m_AxialTexture->Bind();
+	m_MenuBar->Render();
+	m_ToolBar->Render();
+	m_ToolSettings->Render();
 
-	GLCall(glDrawElements(GL_TRIANGLES, m_IBO->GetCount(), GL_UNSIGNED_INT, nullptr));
-
-	m_FB.UnbindBuffer();
-	m_FB.BindTexture(1);
-
-	for (const auto& panel : m_Panels)
+	for (auto& scanWindow : m_ScanWindows)
 	{
-		panel->Render();
+		scanWindow.Render();
 	}
 }
 
 void AdvancedScene::SetTool()
 {
-
-}
-
-void AdvancedScene::LoadFormFile(const std::string& inputImageFileName)
-{
-	m_Scan.LoadFromFile(inputImageFileName);
+	// TODO: implement xd
 }

@@ -134,7 +134,8 @@ class Shader
 		void Bind() const;
 		void Unbind() const;
 
-		void SetUniformInt32(const std::string& name, int32_t val);
+		void SetUniform1i(const std::string& name, int32_t val);
+		void SetUniform1f(const std::string& name, float val);
 
 	private:
 		uint32_t m_ID;
