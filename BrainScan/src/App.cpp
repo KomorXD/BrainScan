@@ -87,7 +87,7 @@ void App::Run()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	m_CurrentScene = std::make_unique<AdvancedScene>();
+	m_CurrentScene = std::make_unique<EmptyScene>();
 	
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

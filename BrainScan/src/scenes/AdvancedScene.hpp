@@ -25,7 +25,7 @@ class AdvancedScene : public IScene
 		std::shared_ptr<Shader> m_Shader;
 
 	public:
-		AdvancedScene();
+		AdvancedScene(const std::string& inputImageFileName);
 		virtual ~AdvancedScene() = default;
 
 		virtual void Input() override;

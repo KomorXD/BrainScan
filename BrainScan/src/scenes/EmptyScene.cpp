@@ -39,6 +39,7 @@ void EmptyScene::Update()
 }
 
 static bool s_ShouldShowModal = false;
+static std::string s_InputImageFileName;
 
 void EmptyScene::Render()
 {
@@ -50,7 +51,7 @@ void EmptyScene::Render()
 
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
-			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			s_InputImageFileName = ImGuiFileDialog::Instance()->GetFilePathName();
 			s_ShouldShowModal = true;
 		}
 
@@ -79,7 +80,7 @@ void EmptyScene::Render()
 			{
 				ImGui::CloseCurrentPopup();
 				s_ShouldShowModal = false;
-				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>());
+				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>(s_InputImageFileName));
 			}
 
 			ImGui::EndPopup();

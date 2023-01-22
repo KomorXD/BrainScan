@@ -2,14 +2,11 @@
 #include "imgui/imgui.h"
 #include "../Core.hpp"
 
-const std::string bartekLocation = "D:\\Projekty\\BrainScan\\NiftiFiles\\test.nii";
-const std::string pawelLocation = "E:\\Projects\\ASFDA\\BrainScan\\test_nifti.nii";
-
-AdvancedScene::AdvancedScene()
+AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 {
 	FUNC_PROFILE();
 
-	m_Scan.LoadFromFile(pawelLocation);
+	m_Scan.LoadFromFile(inputImageFileName);
 
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
 	m_AxialTexture = std::make_shared<Texture>(m_Scan.GetAxial()->GetData()[40], m_Scan.GetAxial()->GetWidth(), m_Scan.GetAxial()->GetHeight());
