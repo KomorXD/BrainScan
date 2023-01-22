@@ -24,6 +24,7 @@ class EmptyScene : public IScene
 		//std::unique_ptr<VertexArray> m_VAO;
 		//std::unique_ptr<IndexBuffer> m_IBO;
 		//std::unique_ptr<Shader> m_Shader;
+		void ChooseFileMode(std::string filePathName);
 
 	public:
 		EmptyScene();

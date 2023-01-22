@@ -2,6 +2,9 @@
 #include "imgui/imgui.h"
 #include "imgui/ImGuiFileDialog.h"
 #include "../Core.hpp"
+#include "../App.hpp"
+#include "BasicScene.hpp"
+#include "AdvancedScene.hpp"
 
 #include "../ui/UIMenuBar.hpp"
 #include "../ui/UIToolBar.hpp"
@@ -62,7 +65,9 @@ EmptyScene::EmptyScene()
 
 	tb->AddButton([]()
 	{
-		ImGuiFileDialog::Instance()->OpenDialog("ChooseScan", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+		//After clicking the open button, a modal with file system appears
+		ImGuiFileDialog::Instance()->OpenDialog("ChooseScan1", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+		
 		LOG_INFO("Button #{} pressed.", 1);
 	});
 
@@ -105,6 +110,8 @@ void EmptyScene::Update()
 	// TODO: idk actually
 }
 
+static bool shouldShowModal = false;
+
 void EmptyScene::Render()
 {
 	//m_FB.BindBuffer();
@@ -118,10 +125,47 @@ void EmptyScene::Render()
 	//m_FB.UnbindBuffer();
 	//m_FB.BindTexture(1);
 
+
 	for(const auto& panel : m_Panels)
 	{
 		panel->Render();
 	}
+
+	if (ImGuiFileDialog::Instance()->Display("ChooseScan1", 32, ImVec2(600.0f, 400.0f)))
+	{
+
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			shouldShowModal = true;
+		}
+
+		
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+	if (shouldShowModal)
+	{
+		ImGui::OpenPopup("Delete?");
+		if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("jakis tekscik nie\n\n");
+			ImGui::Separator();
+			if (ImGui::Button("User", ImVec2(120, 0))) {
+				ImGui::CloseCurrentPopup();
+				shouldShowModal = false;
+				App::GetInstance().SetNextScene(std::make_unique<BasicScene>());
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Admin", ImVec2(120, 0))) {
+				ImGui::CloseCurrentPopup();
+				shouldShowModal = false;
+				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>());
+			}
+			ImGui::EndPopup();
+		}
+	}
+
 }
 
 void EmptyScene::SetTool()
