@@ -27,7 +27,7 @@ VertexBuffer::VertexBuffer(const void* data, uint32_t size)
 {
 	GLCall(glGenBuffers(1, &m_ID));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_ID));
-	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
@@ -66,7 +66,7 @@ void VertexBuffer::Unbind() const
 void VertexBuffer::UpdateBuffer(const void* data, uint32_t size)
 {
 	Bind();
-	GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
@@ -74,7 +74,7 @@ IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
 {
 	GLCall(glGenBuffers(1, &m_ID));
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID));
-	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW));
 }
 
 IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
@@ -110,6 +110,13 @@ void IndexBuffer::Bind() const
 void IndexBuffer::Unbind() const
 {
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+}
+
+void IndexBuffer::UpdateBuffer(const uint32_t* data, uint32_t count)
+{
+	Bind();
+	m_Count = count;
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW));
 }
 
 uint32_t VertexBufferElement::GetSizeOfType(uint32_t t)
