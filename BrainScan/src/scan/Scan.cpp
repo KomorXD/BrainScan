@@ -18,8 +18,22 @@ bool Scan::SaveToFile(const std::string & inputImageFileName)
 
 void Scan::CreateMockData()
 {
+	CreateMock(128);
+}
+
+void Scan::CreateMockData(int size)
+{
+	CreateMock(size);
+}
+
+void Scan::CreateMock(int size)
+{
 	sitk::PixelIDValueEnum pixelType = sitk::sitkInt32;
-	std::vector<unsigned int> imageSize(3, 128);
+
+	if (size <= 128)
+		size = 128;
+
+	std::vector<unsigned int> imageSize(3, size);
 
 	// Create an image
 	//sitk::Image image(imageSize, pixelType);
