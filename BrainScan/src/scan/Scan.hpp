@@ -18,15 +18,17 @@ private:
 
 public:
 	Scan();
+	void CreateMockData();
+	void CreateMockData(int size);
 	virtual bool SaveToFile(const std::string & fileName) override;
 	virtual bool LoadFromFile(const std::string & inputImageFileName) override;
-	void CreateMockData();
 
 	inline View* GetAxial() { return &m_Views.axial; }
 	inline View* GetCoronal() { return &m_Views.coronal; }
 	inline View* GetSagittal() { return &m_Views.sagittal; }
 
 private:
+	void CreateMock(int size);
 	void ConvertToInternalViews();
 	void CreateViews();
 	void PopulateAxialView();
