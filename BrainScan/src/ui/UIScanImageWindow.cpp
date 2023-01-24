@@ -5,8 +5,36 @@
 
 #include <format>
 
-std::unique_ptr<VertexArray> UIScanImageWindow::VAO;
-std::unique_ptr<IndexBuffer> UIScanImageWindow::IBO;
+#define BUFFER_OFFSET(offset) (static_cast<uint8_t*>(0) + (offset))
+
+std::unique_ptr<VertexArray>  Path::s_PathVAO;
+std::unique_ptr<VertexBuffer> Path::s_PathVBO;
+std::unique_ptr<IndexBuffer>  Path::s_PathIBO;
+std::unique_ptr<Shader>		  Path::s_PathsShader;
+
+float Path::s_Color[3];
+
+std::unique_ptr<VertexArray> UIScanImageWindow::s_ScanVAO;
+std::unique_ptr<IndexBuffer> UIScanImageWindow::s_ScanIBO;
+
+void Path::InitializeBuffers()
+{
+	s_PathsShader = std::make_unique<Shader>("res/shaders/PathsShader.vert", "res/shaders/PathsShader.frag");
+
+	s_PathVAO = std::make_unique<VertexArray>();
+	s_PathVBO = std::make_unique<VertexBuffer>(nullptr, 0);
+	s_PathIBO = std::make_unique<IndexBuffer>(nullptr, 0);
+
+	VertexBufferLayout layout;
+
+	layout.Push<float>(2);
+	layout.Push<float>(3);
+
+	s_PathVAO->AddBuffer(*Path::s_PathVBO, layout);
+	s_PathVAO->Unbind();
+	s_PathVBO->Unbind();
+	s_PathIBO->Unbind();
+}
 
 UIScanImageWindow::UIScanImageWindow(int scanID, float posX, float posY, float height)
 	: IUIPanel(posX, posY), m_ID(scanID)
@@ -77,13 +105,16 @@ void UIScanImageWindow::Render()
 		ImVec2 pos = ImGui::GetIO().MousePos;
 		ImVec2 lol(pos.x - screenPos.x, pos.y - screenPos.y);
 		Point p;
-
-		lol.x = lol.x / ((m_Width - 32.0f) * m_ImageRatio);
+		
+		lol.x = lol.x / (m_Width - 32.0f);
 		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
 
 		if (std::ranges::find_if(m_Paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == m_Paths.back().points.end())
 		{
 			p.position = lol;
+			p.color.x = Path::s_Color[0];
+			p.color.y = Path::s_Color[1];
+			p.color.z = Path::s_Color[2];
 
 			m_Paths.back().points.push_back(p);
 		}
@@ -92,45 +123,81 @@ void UIScanImageWindow::Render()
 	if (m_ScanTexture)
 	{
 		m_FB->BindBuffer();
-		VAO->Bind();
-		IBO->Bind();
+		s_ScanVAO->Bind();
+		s_ScanIBO->Bind();
 		m_Shader->Bind();
 		m_ScanTexture->Bind();
 
-		int32_t totalPoints = 0;
-		size_t itr = 0;
+		GLCall(glDrawElements(GL_TRIANGLES, UIScanImageWindow::s_ScanIBO->GetCount(), GL_UNSIGNED_INT, nullptr));
+
+		size_t pointsCount = 0;
+
+		for (const auto& path : m_Paths)
+		{
+			pointsCount += path.points.size();
+		}
+
+		std::vector<float> pointsData;
+		std::vector<uint32_t> pointsIndices;
+
+		std::vector<GLsizei> count;
+		std::vector<GLvoid*> idcs;
+
+		uint32_t currIndex = 0;
+		uint32_t hiddenPaths = 0;
+		uint32_t offset = 0;
+
+		pointsData.reserve(pointsCount * 5);
+		pointsIndices.reserve(pointsCount * 2);
 
 		for (const auto& path : m_Paths)
 		{
 			if (!path.shoudlDraw)
 			{
+				++hiddenPaths;
+				
 				continue;
 			}
+			
+			int32_t indices = 0;
 
-			if (itr >= 256)
-			{
-				break;
-			}
+			idcs.push_back(BUFFER_OFFSET(offset * sizeof(uint32_t)));
 
 			const std::vector<Point>& pts = path.points;
 
-			for (size_t i = 0; i < pts.size() && itr < 256; ++i, ++itr)
+			for (const auto& point : pts)
 			{
-				m_Shader->SetUniform1f("u_BrushPoints[" + std::to_string(itr) + "].x", pts[i].position.x);
-				m_Shader->SetUniform1f("u_BrushPoints[" + std::to_string(itr) + "].y", pts[i].position.y);
+				pointsData.push_back(point.position.x);
+				pointsData.push_back(point.position.y);
+				pointsData.push_back(point.color.x);
+				pointsData.push_back(point.color.y);
+				pointsData.push_back(point.color.z);
 
-				++totalPoints;
+				pointsIndices.push_back(currIndex++);
+
+				++indices;
 			}
+			
+			count.push_back(std::max(indices - 1, 0));
+			offset += offset == 0 ? indices : std::max(indices - 1, 0);
+
+			++currIndex;
 		}
+		
+		Path::s_PathsShader->Bind();
+		Path::s_PathVAO->Bind();
+		Path::s_PathVBO->Bind();
+		Path::s_PathIBO->Bind();
 
-		m_Shader->SetUniform1i("u_BrushPointsSize", totalPoints);
+		Path::s_PathVBO->UpdateBuffer(pointsData.data(), pointsData.size() * sizeof(float));
+		Path::s_PathIBO->UpdateBuffer(pointsIndices.data(), pointsIndices.size());
 
-		GLCall(glDrawElements(GL_TRIANGLES, IBO->GetCount(), GL_UNSIGNED_INT, nullptr));
+		GLCall(glMultiDrawElements(GL_LINE_STRIP, count.data(), GL_UNSIGNED_INT, idcs.data(), idcs.size()));
 
 		m_FB->UnbindBuffer();
 		m_FB->BindTexture(1);
 
-		ImGui::Image((void*)(intptr_t)m_FB->GetTextureID(), ImVec2((m_Width - 32.0f) * m_ImageRatio, m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
+		ImGui::Image((void*)(intptr_t)m_FB->GetTextureID(), ImVec2((m_Width - 32.0f), m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
 	}
 
 	ImGui::EndChild();
@@ -155,17 +222,17 @@ void UIScanImageWindow::InitializeBuffers(uint32_t width, uint32_t height)
 		2, 3, 0
 	};
 
-	VAO = std::make_unique<VertexArray>();
+	s_ScanVAO = std::make_unique<VertexArray>();
 	VertexBuffer vbo(vertices.data(), 16 * sizeof(float));
-	IBO = std::make_unique<IndexBuffer>(indices.data(), 6);
+	s_ScanIBO = std::make_unique<IndexBuffer>(indices.data(), 6);
 
 	VertexBufferLayout layout;
 
 	layout.Push<float>(2);
 	layout.Push<float>(2);
 
-	VAO->AddBuffer(vbo, layout);
-	VAO->Unbind();
+	s_ScanVAO->AddBuffer(vbo, layout);
+	s_ScanVAO->Unbind();
 	vbo.Unbind();
-	IBO->Unbind();
+	s_ScanIBO->Unbind();
 }
