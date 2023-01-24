@@ -61,16 +61,49 @@ TEST(PixelValueTest, CheckPixelValuesRangeFrom0To1Sagittal)
 {
 	Scan scan;
 	scan.CreateMockData();
-	View* axial = scan.GetSagittal();
+	View* sagittal = scan.GetSagittal();
 
-	EXPECT_TRUE(AreAllValuesBetweenInclusive(axial, 0, 1));
+	EXPECT_TRUE(AreAllValuesBetweenInclusive(sagittal, 0, 1));
 }
 
 TEST(PixelValueTest, CheckPixelValuesRangeFrom0To1Coronal)
 {
 	Scan scan;
 	scan.CreateMockData();
-	View* axial = scan.GetCoronal();
+	View* coronal = scan.GetCoronal();
 
-	EXPECT_TRUE(AreAllValuesBetweenInclusive(axial, 0, 1));
+	EXPECT_TRUE(AreAllValuesBetweenInclusive(coronal, 0, 1));
+}
+
+TEST(ImageSizeTest, ImageSizeTestAxial)
+{
+	Scan scan;
+	int expectedSize = 250;
+	scan.CreateMockData(expectedSize);
+
+	int axialSize = scan.GetAxial()->GetData().size();
+
+	EXPECT_EQ(axialSize , expectedSize);
+}
+
+TEST(ImageSizeTest, ImageSizeTestSagittal)
+{
+	Scan scan;
+	int expectedSize = 250;
+	scan.CreateMockData(expectedSize);
+
+	int sagittalSize = scan.GetSagittal()->GetData().size();
+
+	EXPECT_EQ(sagittalSize, expectedSize);
+}
+
+TEST(ImageSizeTest, ImageSizeTestCoronal)
+{
+	Scan scan;
+	int expectedSize = 250;
+	scan.CreateMockData(expectedSize);
+
+	int coronalSize = scan.GetCoronal()->GetData().size();
+
+	EXPECT_EQ(coronalSize, expectedSize);
 }
