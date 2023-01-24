@@ -528,6 +528,8 @@
     <ClInclude Include="src\scan\Views.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\PathsShader.frag" />
+    <None Include="res\shaders\PathsShader.vert" />
     <None Include="res\shaders\TextureShader.frag" />
     <None Include="res\shaders\TextureShader.vert" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
