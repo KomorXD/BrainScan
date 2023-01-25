@@ -195,7 +195,7 @@ void VertexArray::Unbind() const
 }
 
 Shader::Shader(const std::string& vs, const std::string& fs)
-	: m_ID(0)
+	: m_VertexShaderPath(vs), m_FragmentShaderPath(fs), m_ID(0)
 {
 	m_ID = ShaderCreate(ShaderParse(vs), ShaderParse(fs));
 }
@@ -223,6 +223,14 @@ void Shader::SetUniform1i(const std::string& name, int32_t val)
 void Shader::SetUniform1f(const std::string& name, float val)
 {
 	GLCall(glUniform1f(GetUniformLocation(name), val));
+}
+
+void Shader::ReloadShader()
+{
+	Unbind();
+	GLCall(glDeleteProgram(m_ID));
+
+	m_ID = ShaderCreate(ShaderParse(m_VertexShaderPath), ShaderParse(m_FragmentShaderPath));
 }
 
 std::string Shader::ShaderParse(const std::string& filepath)
