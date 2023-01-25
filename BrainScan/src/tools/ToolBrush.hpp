@@ -4,5 +4,10 @@
 
 class ToolBrush : public ITool
 {
-	virtual void UseTool() override;
+	public:
+		ToolBrush(IScene* parentScene);
+		virtual ~ToolBrush();
+
+		virtual std::unique_ptr<UIToolSettings> GetSettingsUI(float posX, float posY) override;
+		virtual void UseTool() override;
 };
