@@ -19,7 +19,10 @@ EmptyScene::EmptyScene()
 	m_MenuBar = std::make_unique<UIMenuBar>();
 
 	m_MenuBar->PushMenu("File");
-	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() { LOG_INFO("File/Open pressed."); });
+	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() 
+		{ 
+			ImGuiFileDialog::Instance()->OpenDialog("ChooseScan1", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+		});
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
 	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
 
