@@ -1,25 +1,17 @@
 #pragma once
 
 #include "IUIPanel.hpp"
-#include "UIScanImageWindow.hpp"
 
-struct PathsPack
-{
-	std::vector<Path>* axialPaths = nullptr;
-	std::vector<Path>* coronalPaths = nullptr;
-	std::vector<Path>* sagittalPaths = nullptr;
-};
+class IScene;
 
 class UIToolSettings : public IUIPanel
 {
-	private:
-		PathsPack m_Paths;
+	protected:
+		IScene* m_ParentScene = nullptr;
 
 	public:
-		UIToolSettings(float posX = 0.0f, float posY = 0.0f);
+		UIToolSettings(IScene* parentScene, float posX = 0.0f, float posY = 0.0f);
 		virtual ~UIToolSettings() = default;
 
-		void LoadBrushPaths(const PathsPack& paths);
-
-		virtual void Render() override;
+		virtual void Render() = 0;
 };
