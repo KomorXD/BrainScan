@@ -13,8 +13,9 @@ class App
 		~App() = default;
 
 		void Run();
-
 		void SetNextScene(std::unique_ptr<IScene>&& newScene);
+		void SetWindowShouldClose(bool status);
+
 		static App& GetInstance();
 
 	private:

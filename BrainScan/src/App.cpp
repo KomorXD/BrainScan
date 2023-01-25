@@ -130,6 +130,11 @@ void App::SetNextScene(std::unique_ptr<IScene>&& newScene)
 	m_NextScene = std::move(newScene);
 }
 
+void App::SetWindowShouldClose(bool status)
+{
+	glfwSetWindowShouldClose(m_Window, status);
+}
+
 App& App::GetInstance()
 {
 	static App app(1280, 720, "BRAINSCAN");
