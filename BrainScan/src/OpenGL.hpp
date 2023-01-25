@@ -50,6 +50,8 @@ class IndexBuffer
 		void Bind() const;
 		void Unbind() const;
 
+		void UpdateBuffer(const uint32_t* data, uint32_t count);
+
 		inline const uint32_t GetCount() const { return m_Count; }
 
 	private:

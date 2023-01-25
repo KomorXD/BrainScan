@@ -34,32 +34,29 @@ void UIToolSettings::Render()
 
 	Update();
 
+	// Temporary before we have a proper tool class and tool settings subclass
+	ImGui::ColorPicker3("Brush color", Path::s_Color, ImGuiColorEditFlags_PickerHueWheel);
+
 	ImGui::Text("Current brushes");
 
-	if (m_Paths.axialPaths)
+	if (m_Paths.axialPaths && ImGui::CollapsingHeader("Axial"))
 	{
-		ImGui::Text("AXIAL");
-
 		for (auto& path : *(m_Paths.axialPaths))
 		{
 			ImGui::Checkbox(std::format("Axial path #{}", path.pathID).c_str(), &path.shoudlDraw);
 		}
 	}
 
-	if (m_Paths.coronalPaths)
+	if (m_Paths.coronalPaths && ImGui::CollapsingHeader("Coronal"))
 	{
-		ImGui::Text("CORONAL");
-
 		for (auto& path : *(m_Paths.coronalPaths))
 		{
 			ImGui::Checkbox(std::format("Coronal path #{}", path.pathID).c_str(), &path.shoudlDraw);
 		}
 	}
 
-	if (m_Paths.sagittalPaths)
+	if (m_Paths.sagittalPaths && ImGui::CollapsingHeader("Sagittal"))
 	{
-		ImGui::Text("SAGITTAL");
-
 		for (auto& path : *(m_Paths.sagittalPaths))
 		{
 			ImGui::Checkbox(std::format("Sagittal path #{}", path.pathID).c_str(), &path.shoudlDraw);

@@ -50,7 +50,11 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 	m_ScanWindows.back().SetScanTexture(m_AxialTexture);
 	m_ScanWindows.back().SetShader(m_Shader);
 
+	GLCall(glEnable(GL_MULTISAMPLE));
+	GLCall(glLineWidth(10.0f));
+
 	UIScanImageWindow::InitializeBuffers((uint32_t)m_ScanWindows.back().GetWidth() * 3, (uint32_t)m_ScanWindows.back().GetHeight() * 2);
+	Path::InitializeBuffers();
 }
 
 void AdvancedScene::Input()

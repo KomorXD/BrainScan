@@ -1512,5 +1512,7 @@
     </None>
     <None Include="res\shaders\TextureShader.vert" />
     <None Include="res\shaders\TextureShader.frag" />
+    <None Include="res\shaders\PathsShader.vert" />
+    <None Include="res\shaders\PathsShader.frag" />
   </ItemGroup>
 </Project>
