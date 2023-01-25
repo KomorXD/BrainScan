@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IScene.hpp"
-#include "../ui/UIPanels.hpp"
 #include "../OpenGL.hpp"
 #include "../scan/Scan.hpp"
 
@@ -27,6 +26,8 @@ class AdvancedScene : public IScene
 	public:
 		AdvancedScene(const std::string& inputImageFileName);
 		virtual ~AdvancedScene() = default;
+
+		virtual PathsPack RequestPathsPack() override;
 
 		virtual void Input() override;
 		virtual void Update() override;

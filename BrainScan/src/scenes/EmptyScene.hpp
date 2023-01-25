@@ -18,6 +18,8 @@ class EmptyScene : public IScene
 		EmptyScene();
 		virtual ~EmptyScene() = default;
 
+		virtual PathsPack RequestPathsPack() override { return {}; };
+
 		virtual void Input() override;
 		virtual void Update() override;
 		virtual void Render() override;
