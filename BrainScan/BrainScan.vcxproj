@@ -139,7 +139,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib\Debug;$(SolutionDir)Dependencies\spdlog\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
+      <Command>xcopy /Y /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -162,7 +162,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib\Release;$(SolutionDir)Dependencies\spdlog\lib\Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
+      <Command>xcopy /Y /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static_lib|Win32'">
@@ -201,7 +201,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib\Debug;$(SolutionDir)Dependencies\spdlog\lib\Debug;$(SolutionDir)Dependencies\SimpleITK\lib\Debug;$(SolutionDir)Dependencies\ITK\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
+      <Command>xcopy /Y /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -224,7 +224,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib\Release;$(SolutionDir)Dependencies\spdlog\lib\Release;$(SolutionDir)Dependencies\SimpleITK\lib\Release;$(SolutionDir)Dependencies\ITK\lib\Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
+      <Command>xcopy /Y /E /I $(ProjectDir)res $(SolutionDir)bin\$(Platform)-$(Configuration)\res</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static_lib|x64'">
