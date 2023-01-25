@@ -66,7 +66,7 @@ void UIScanImageWindow::SetShader(std::shared_ptr<Shader>& shader)
 
 void UIScanImageWindow::SetImageRatio(float ratio)
 {
-	m_ImageRatio = ratio;
+	// m_ImageRatio = ratio;
 }
 
 static float dist(Point lhs, ImVec2 rhs)
@@ -83,121 +83,13 @@ void UIScanImageWindow::Render()
 
 	Update();
 
-	ImGui::BeginChild(std::format("scan#{}", m_ID).c_str(), ImVec2((m_Width - 16.0f) * m_ImageRatio, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
+	ImGui::BeginChild(std::format("scan#{}", m_ID).c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
 
-	bool isDraggedNow = ImGui::IsWindowHovered() && ImGui::GetIO().MouseDown[0];
-
-	if (!m_IsDraggedOver && isDraggedNow)
-	{
-		m_IsDraggedOver = true;
-
-		m_Paths.emplace_back();
-		m_Paths.back().pathID = m_Paths.size() == 1 ? 1 : (++m_Paths.rbegin())->pathID + 1;
-	}
-	else if (m_IsDraggedOver && !isDraggedNow)
-	{
-		m_IsDraggedOver = false;
-	}
-
-	if (ImGui::IsWindowHovered() && m_IsDraggedOver)
-	{
-		ImVec2 screenPos = ImGui::GetCursorScreenPos();
-		ImVec2 pos = ImGui::GetIO().MousePos;
-		ImVec2 lol(pos.x - screenPos.x, pos.y - screenPos.y);
-		Point p;
-		
-		lol.x = lol.x / (m_Width - 32.0f);
-		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
-
-		if (std::ranges::find_if(m_Paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == m_Paths.back().points.end())
-		{
-			p.position = lol;
-			p.color.x = Path::s_Color[0];
-			p.color.y = Path::s_Color[1];
-			p.color.z = Path::s_Color[2];
-
-			m_Paths.back().points.push_back(p);
-		}
-	}
+	CheckForDrawing();
 
 	if (m_ScanTexture)
 	{
-		m_FB->BindBuffer();
-		s_ScanVAO->Bind();
-		s_ScanIBO->Bind();
-		m_Shader->Bind();
-		m_ScanTexture->Bind();
-
-		GLCall(glDrawElements(GL_TRIANGLES, UIScanImageWindow::s_ScanIBO->GetCount(), GL_UNSIGNED_INT, nullptr));
-
-		size_t pointsCount = 0;
-
-		for (const auto& path : m_Paths)
-		{
-			pointsCount += path.points.size();
-		}
-
-		std::vector<float> pointsData;
-		std::vector<uint32_t> pointsIndices;
-
-		std::vector<GLsizei> count;
-		std::vector<GLvoid*> idcs;
-
-		uint32_t currIndex = 0;
-		uint32_t hiddenPaths = 0;
-		uint32_t offset = 0;
-
-		pointsData.reserve(pointsCount * 5);
-		pointsIndices.reserve(pointsCount * 2);
-
-		for (const auto& path : m_Paths)
-		{
-			if (!path.shoudlDraw)
-			{
-				++hiddenPaths;
-				
-				continue;
-			}
-			
-			int32_t indices = 0;
-
-			idcs.push_back(BUFFER_OFFSET(offset * sizeof(uint32_t)));
-
-			const std::vector<Point>& pts = path.points;
-
-			for (const auto& point : pts)
-			{
-				pointsData.push_back(point.position.x);
-				pointsData.push_back(point.position.y);
-				pointsData.push_back(point.color.x);
-				pointsData.push_back(point.color.y);
-				pointsData.push_back(point.color.z);
-
-				pointsIndices.push_back(currIndex++);
-
-				++indices;
-			}
-			
-			count.push_back(std::max(indices - 1, 0));
-			offset += offset == 0 ? indices : std::max(indices - 1, 0);
-
-			++currIndex;
-		}
-		
-		Path::s_PathsShader->Bind();
-		Path::s_PathVAO->Bind();
-		Path::s_PathVBO->Bind();
-		Path::s_PathIBO->Bind();
-
-		Path::s_PathVBO->UpdateBuffer(pointsData.data(), pointsData.size() * sizeof(float));
-		Path::s_PathIBO->UpdateBuffer(pointsIndices.data(), pointsIndices.size());
-
-		GLCall(glMultiDrawElements(GL_LINE_STRIP, count.data(), GL_UNSIGNED_INT, idcs.data(), idcs.size()));
-
-		m_FB->UnbindBuffer();
-		m_FB->BindTexture(1);
-
-		ImGui::Image((void*)(intptr_t)m_FB->GetTextureID(), ImVec2((m_Width - 32.0f), m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
+		RenderScanAndBrushes();
 	}
 
 	ImGui::EndChild();
@@ -235,4 +127,119 @@ void UIScanImageWindow::InitializeBuffers(uint32_t width, uint32_t height)
 	s_ScanVAO->Unbind();
 	vbo.Unbind();
 	s_ScanIBO->Unbind();
+}
+
+void UIScanImageWindow::CheckForDrawing()
+{
+	bool isDraggedNow = ImGui::IsWindowHovered() && ImGui::GetIO().MouseDown[0];
+
+	if (!m_IsDraggedOver && isDraggedNow)
+	{
+		m_IsDraggedOver = true;
+
+		m_Paths.emplace_back();
+		m_Paths.back().pathID = m_Paths.size() == 1 ? 1 : (++m_Paths.rbegin())->pathID + 1;
+	}
+	else if (m_IsDraggedOver && !isDraggedNow)
+	{
+		m_IsDraggedOver = false;
+	}
+
+	if (ImGui::IsWindowHovered() && m_IsDraggedOver)
+	{
+		ImVec2 screenPos = ImGui::GetCursorScreenPos();
+		ImVec2 pos = ImGui::GetIO().MousePos;
+		ImVec2 lol(pos.x - screenPos.x, pos.y - screenPos.y);
+		Point p;
+
+		lol.x = lol.x / (m_Width - 32.0f);
+		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
+
+		if (std::ranges::find_if(m_Paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == m_Paths.back().points.end())
+		{
+			p.position = lol;
+			p.color.x = Path::s_Color[0];
+			p.color.y = Path::s_Color[1];
+			p.color.z = Path::s_Color[2];
+
+			m_Paths.back().points.push_back(p);
+		}
+	}
+}
+
+void UIScanImageWindow::RenderScanAndBrushes()
+{
+	m_FB->BindBuffer();
+	s_ScanVAO->Bind();
+	s_ScanIBO->Bind();
+	m_Shader->Bind();
+	m_ScanTexture->Bind();
+
+	GLCall(glDrawElements(GL_TRIANGLES, UIScanImageWindow::s_ScanIBO->GetCount(), GL_UNSIGNED_INT, nullptr));
+
+	size_t pointsCount = 0;
+
+	for (const auto& path : m_Paths)
+	{
+		pointsCount += path.points.size();
+	}
+
+	std::vector<float> pointsData;
+	std::vector<uint32_t> pointsIndices;
+
+	std::vector<GLsizei> count;
+	std::vector<GLvoid*> idcs;
+
+	uint32_t currIndex = 0;
+	uint32_t offset = 0;
+
+	pointsData.reserve(pointsCount * 5);
+	pointsIndices.reserve(pointsCount * 2);
+
+	for (const auto& path : m_Paths)
+	{
+		if (!path.shoudlDraw)
+		{
+			continue;
+		}
+
+		int32_t indices = 0;
+
+		idcs.push_back(BUFFER_OFFSET(offset * sizeof(uint32_t)));
+
+		const std::vector<Point>& pts = path.points;
+
+		for (const auto& point : pts)
+		{
+			pointsData.push_back(point.position.x);
+			pointsData.push_back(point.position.y);
+			pointsData.push_back(point.color.x);
+			pointsData.push_back(point.color.y);
+			pointsData.push_back(point.color.z);
+
+			pointsIndices.push_back(currIndex++);
+
+			++indices;
+		}
+
+		count.push_back(std::max(indices - 1, 0));
+		offset += offset == 0 ? indices : std::max(indices - 1, 0);
+
+		++currIndex;
+	}
+
+	Path::s_PathsShader->Bind();
+	Path::s_PathVAO->Bind();
+	Path::s_PathVBO->Bind();
+	Path::s_PathIBO->Bind();
+
+	Path::s_PathVBO->UpdateBuffer(pointsData.data(), pointsData.size() * sizeof(float));
+	Path::s_PathIBO->UpdateBuffer(pointsIndices.data(), pointsIndices.size());
+
+	GLCall(glMultiDrawElements(GL_LINE_STRIP, count.data(), GL_UNSIGNED_INT, idcs.data(), idcs.size()));
+
+	m_FB->UnbindBuffer();
+	m_FB->BindTexture(1);
+
+	ImGui::Image((void*)(intptr_t)m_FB->GetTextureID(), ImVec2((m_Width - 32.0f), m_Height - ImGui::GetFontSize() * 1.7f - 24.0f));
 }

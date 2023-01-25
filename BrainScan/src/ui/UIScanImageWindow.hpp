@@ -39,12 +39,11 @@ class UIScanImageWindow : public IUIPanel
 		static std::unique_ptr<IndexBuffer> s_ScanIBO;
 
 		int m_ID;
+		
 		std::shared_ptr<Texture> m_ScanTexture;
 		std::shared_ptr<Framebuffer> m_FB;
 		std::shared_ptr<Shader> m_Shader;
 		std::vector<Path> m_Paths;
-
-		float m_ImageRatio = 1.0f;
 
 		bool m_IsDraggedOver = false;
 
@@ -61,4 +60,8 @@ class UIScanImageWindow : public IUIPanel
 		virtual void Render() override;
 
 		static void InitializeBuffers(uint32_t width, uint32_t height);
+
+	private:
+		void CheckForDrawing();
+		void RenderScanAndBrushes();
 };
