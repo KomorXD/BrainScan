@@ -17,6 +17,15 @@ EmptyScene::EmptyScene()
 	FUNC_PROFILE();
 
 	m_MenuBar = std::make_unique<UIMenuBar>();
+
+	m_MenuBar->PushMenu("File");
+	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() { LOG_INFO("File/Open pressed."); });
+	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
+	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
+
+	m_MenuBar->PushMenu("Help");
+	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("jest sroda moje ziomki"); });
+
 	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
 
 	m_ToolBar->AddButton([]()

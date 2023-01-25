@@ -1,6 +1,7 @@
 #include "AdvancedScene.hpp"
 #include "imgui/imgui.h"
 #include "../Core.hpp"
+#include "../App.hpp"
 
 AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 {
@@ -14,6 +15,20 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 	m_SagittalTexture = std::make_shared<Texture>(m_Scan.GetSagittal()->GetData()[40], m_Scan.GetSagittal()->GetWidth(), m_Scan.GetSagittal()->GetHeight());
 
 	m_MenuBar = std::make_unique<UIMenuBar>();
+
+	m_MenuBar->PushMenu("File");
+	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() { LOG_INFO("File/Open pressed."); });
+	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
+	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
+
+	m_MenuBar->PushMenu("Options");
+	m_MenuBar->PushMenuItem("nwm1", "Ctrl + 1", []() { LOG_INFO("Options/nwm1 pressed."); });
+	m_MenuBar->PushMenuItem("nwm2", "Ctrl + 2", []() { LOG_INFO("Options/nwm2 pressed."); });
+	m_MenuBar->PushMenuItem("nwm3", "Ctrl + 3", []() { LOG_INFO("Options/nwm3 pressed."); });
+
+	m_MenuBar->PushMenu("Help");
+	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("jest sroda moje ziomki"); });
+
 	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
 
 	for (int i = 0; i < 10; ++i)
