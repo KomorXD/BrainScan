@@ -18,74 +18,45 @@ UIMenuBar::UIMenuBar()
 	LOG_INFO("Initialized menu bar panel");
 }
 
+void UIMenuBar::PushMenu(const std::string& label)
+{
+	m_Menus.emplace_back(label);
+}
+
+void UIMenuBar::PushMenuItem(const std::string& label, const std::string& shortcut, const std::function<void(void)>& f)
+{
+	if (m_Menus.empty())
+	{
+		return;
+	}
+
+	MenuItem mt{ label, shortcut, f };
+
+	m_Menus.back().items.push_back(std::move(mt));
+}
+
 void UIMenuBar::Render()
 {
 	if(ImGui::BeginMainMenuBar())
 	{
 		Update();
 
-		if(ImGui::BeginMenu("File"))
+		for (const auto& menu : m_Menus)
 		{
-			if(ImGui::MenuItem("Open", "Ctrl + O"))
+			if (ImGui::BeginMenu(menu.label.c_str()))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseScan", "Open scan file", ".hpp,.cpp,.h,.c", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
-			}
+				for (const auto& item : menu.items)
+				{
+					if (ImGui::MenuItem(item.label.c_str(), item.shortcut.c_str()))
+					{
+						item.func();
+					}
+				}
 
-			if(ImGui::MenuItem("Save", "Ctrl + S"))
-			{
-				LOG_INFO("File -> Save");
+				ImGui::EndMenu();
 			}
-
-			if(ImGui::MenuItem("Quit", "Ctrl + Q"))
-			{
-				LOG_INFO("File -> Quit");
-			}
-
-			ImGui::EndMenu();
-		}
-
-		if(ImGui::BeginMenu("Options"))
-		{
-			if(ImGui::MenuItem("Copy", "Ctrl + C"))
-			{
-				LOG_INFO("Options -> Copy");
-			}
-
-			if(ImGui::MenuItem("Cut", "Ctrl + X"))
-			{
-				LOG_INFO("Options -> Cut");
-			}
-
-			if(ImGui::MenuItem("Paste", "Ctrl + V"))
-			{
-				LOG_INFO("Options -> Paste");
-			}
-			
-			ImGui::EndMenu();
-		}
-
-		if(ImGui::BeginMenu("Help"))
-		{
-			if(ImGui::MenuItem("nwm", "Ctrl + H"))
-			{
-				LOG_INFO("No help");
-			}
-			
-			ImGui::EndMenu();
 		}
 
 		ImGui::EndMainMenuBar();
-	}
-
-	if (ImGuiFileDialog::Instance()->Display("ChooseScan", 32, ImVec2(600.0f, 400.0f)))
-	{
-		if (ImGuiFileDialog::Instance()->IsOk())
-		{
-			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-
-			LOG_TRACE("Opened file: {}", filePathName);
-		}
-
-		ImGuiFileDialog::Instance()->Close();
 	}
 }
