@@ -22,7 +22,7 @@ class AdvancedScene : public IScene
 		std::shared_ptr<Texture> m_AxialTexture;
 		std::shared_ptr<Texture> m_CoronalTexture;
 		std::shared_ptr<Texture> m_SagittalTexture;
-		std::shared_ptr<Shader> m_Shader;
+		std::shared_ptr<Shader>	m_Shader;
 
 	public:
 		AdvancedScene(const std::string& inputImageFileName);
@@ -32,7 +32,4 @@ class AdvancedScene : public IScene
 		virtual void Update() override;
 		virtual void Render() override;
 		virtual void SetTool() override;
-
-	private:
-		void LoadFormFile(const std::string& inputImageFileName);
 };

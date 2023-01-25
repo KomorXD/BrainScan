@@ -80,7 +80,7 @@ void EmptyScene::Render()
 			{
 				ImGui::CloseCurrentPopup();
 				s_ShouldShowModal = false;
-				App::GetInstance().SetNextScene(std::make_unique<BasicScene>());
+				App::GetInstance().SetNextScene(std::make_unique<BasicScene>(s_InputImageFileName));
 			}
 
 			ImGui::SameLine();
