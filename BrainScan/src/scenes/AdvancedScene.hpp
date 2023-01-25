@@ -3,6 +3,7 @@
 #include "IScene.hpp"
 #include "../OpenGL.hpp"
 #include "../scan/Scan.hpp"
+#include "../tools/ITool.hpp"
 
 #include <vector>
 #include <memory>
@@ -16,6 +17,7 @@ class AdvancedScene : public IScene
 
 		std::vector<UIScanImageWindow> m_ScanWindows;
 
+		std::unique_ptr<ITool> m_CurrentTool;
 		Scan m_Scan;
 
 		std::shared_ptr<Texture> m_AxialTexture;

@@ -2,6 +2,7 @@
 #include "imgui/imgui.h"
 #include "../Core.hpp"
 #include "../App.hpp"
+#include "../tools/ToolBrush.hpp"
 
 AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 {
@@ -39,7 +40,8 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 			});
 	}
 
-	m_ToolSettings = std::make_unique<UIBrushSettings>(this, m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
+	m_CurrentTool = std::make_unique<ToolBrush>(this);
+	m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 
 	float scanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
 
