@@ -48,6 +48,8 @@ class UIScanImageWindow : public IUIPanel
 		bool m_IsDraggedOver = false;
 
 	public:
+		static bool s_DrawingEnabled;
+
 		UIScanImageWindow(const std::string& label, float posX, float posY, float height);
 		virtual ~UIScanImageWindow() = default;
 

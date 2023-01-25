@@ -85,7 +85,10 @@ void UIScanImageWindow::Render()
 
 	ImGui::BeginChild(m_Label.c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
 
-	CheckForDrawing();
+	if (s_DrawingEnabled)
+	{
+		CheckForDrawing();
+	}
 
 	if (m_ScanTexture)
 	{
