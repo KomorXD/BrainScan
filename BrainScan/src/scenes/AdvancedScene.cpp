@@ -11,9 +11,6 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 	m_Scan.LoadFromFile(inputImageFileName);
 
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
-	m_AxialTexture = std::make_shared<Texture>(m_Scan.GetAxial()->GetData()[40], m_Scan.GetAxial()->GetWidth(), m_Scan.GetAxial()->GetHeight());
-	m_CoronalTexture = std::make_shared<Texture>(m_Scan.GetCoronal()->GetData()[40], m_Scan.GetCoronal()->GetWidth(), m_Scan.GetCoronal()->GetHeight());
-	m_SagittalTexture = std::make_shared<Texture>(m_Scan.GetSagittal()->GetData()[40], m_Scan.GetSagittal()->GetWidth(), m_Scan.GetSagittal()->GetHeight());
 
 	m_MenuBar = std::make_unique<UIMenuBar>();
 
@@ -44,20 +41,24 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 	m_CurrentTool = std::make_unique<ToolBrush>(this);
 	m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 
+	View* axial	   = m_Scan.GetAxial();
+	View* coronal  = m_Scan.GetCoronal();
+	View* sagittal = m_Scan.GetSagittal();
+
 	float scanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
 
 	m_ScanWindows.reserve(4);
 
 	m_ScanWindows.emplace_back("Axial", m_ToolSettings->GetPosX() + m_ToolSettings->GetWidth(), m_ToolSettings->GetPosY(), scanPanelHeight);
-	m_ScanWindows.back().SetScanTexture(m_AxialTexture);
+	m_ScanWindows.back().SetView(axial);
 	m_ScanWindows.back().SetShader(m_Shader);
 
 	m_ScanWindows.emplace_back("Coronal", m_ScanWindows.back().GetPosX() + m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY(), scanPanelHeight);
-	m_ScanWindows.back().SetScanTexture(m_CoronalTexture);
+	m_ScanWindows.back().SetView(coronal);
 	m_ScanWindows.back().SetShader(m_Shader);
 
 	m_ScanWindows.emplace_back("Sagittal", m_ScanWindows.back().GetPosX() - m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY() + m_ScanWindows.back().GetHeight(), scanPanelHeight);
-	m_ScanWindows.back().SetScanTexture(m_SagittalTexture);
+	m_ScanWindows.back().SetView(sagittal);
 	m_ScanWindows.back().SetShader(m_Shader);
 
 	m_ScanWindows.emplace_back("NULL", m_ScanWindows.back().GetPosX() + m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY(), scanPanelHeight);

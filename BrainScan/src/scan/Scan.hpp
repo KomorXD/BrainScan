@@ -13,11 +13,8 @@ class Scan : public Serializable
 private:
 	sitk::Image m_Image;
 	Views m_Views;
-	int m_Min;
-	int m_Max;
 
 public:
-	Scan();
 	void CreateMockData();
 	void CreateMockData(int size);
 	virtual bool SaveToFile(const std::string & fileName) override;
@@ -35,5 +32,4 @@ private:
 	void CreateSagittalViewBasedOnAxialView();
 	void CreateCoronalViewBasedOnAxialView();
 	void FindMinMax(View& view);
-	float NormalizeValue(int value);
 };

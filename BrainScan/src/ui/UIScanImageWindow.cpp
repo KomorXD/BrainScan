@@ -7,34 +7,8 @@
 
 #define BUFFER_OFFSET(offset) (static_cast<uint8_t*>(0) + (offset))
 
-std::unique_ptr<VertexArray>  Path::s_PathVAO;
-std::unique_ptr<VertexBuffer> Path::s_PathVBO;
-std::unique_ptr<IndexBuffer>  Path::s_PathIBO;
-std::unique_ptr<Shader>		  Path::s_PathsShader;
-
-float Path::s_Color[3];
-
 std::unique_ptr<VertexArray> UIScanImageWindow::s_ScanVAO;
 std::unique_ptr<IndexBuffer> UIScanImageWindow::s_ScanIBO;
-
-void Path::InitializeBuffers()
-{
-	s_PathsShader = std::make_unique<Shader>("res/shaders/PathsShader.vert", "res/shaders/PathsShader.frag");
-
-	s_PathVAO = std::make_unique<VertexArray>();
-	s_PathVBO = std::make_unique<VertexBuffer>(nullptr, 0);
-	s_PathIBO = std::make_unique<IndexBuffer>(nullptr, 0);
-
-	VertexBufferLayout layout;
-
-	layout.Push<float>(2);
-	layout.Push<float>(3);
-
-	s_PathVAO->AddBuffer(*Path::s_PathVBO, layout);
-	s_PathVAO->Unbind();
-	s_PathVBO->Unbind();
-	s_PathIBO->Unbind();
-}
 
 UIScanImageWindow::UIScanImageWindow(const std::string& label, float posX, float posY, float height)
 	: IUIPanel(posX, posY), m_Label(label)
@@ -54,24 +28,26 @@ UIScanImageWindow::UIScanImageWindow(const std::string& label, float posX, float
 	m_FB->UnbindBuffer();
 }
 
-void UIScanImageWindow::SetScanTexture(std::shared_ptr<Texture>& text)
-{
-	m_ScanTexture = text;
-}
+//void UIScanImageWindow::SetScanTexture(std::shared_ptr<Texture>& text)
+//{
+//	m_ScanTexture = text;
+//}
 
 void UIScanImageWindow::SetShader(std::shared_ptr<Shader>& shader)
 {
 	m_Shader = shader;
 }
 
-void UIScanImageWindow::SetImageRatio(float ratio)
+void UIScanImageWindow::SetView(View* view)
 {
-	// m_ImageRatio = ratio;
-}
+	if (!view)
+	{
+		return;
+	}
 
-static float dist(Point lhs, ImVec2 rhs)
-{
-	return std::sqrtf(std::powf(lhs.position.x - rhs.x, 2.0f) + std::powf(lhs.position.y - rhs.y, 2.0f));
+	m_View = view;
+
+	m_ScanTexture = std::make_shared<Texture>(view->GetData()[m_Depth].buffer, view->GetWidth(), view->GetHeight());
 }
 
 void UIScanImageWindow::Render()
@@ -85,7 +61,7 @@ void UIScanImageWindow::Render()
 
 	ImGui::BeginChild(m_Label.c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
 
-	if (s_DrawingEnabled)
+	if (s_DrawingEnabled && m_View)
 	{
 		CheckForDrawing();
 	}
@@ -132,16 +108,22 @@ void UIScanImageWindow::InitializeBuffers(uint32_t width, uint32_t height)
 	s_ScanIBO->Unbind();
 }
 
+static float dist(const Point& point1, const ImVec2& vect2)
+{
+	return std::sqrtf(std::powf(point1.position.x - vect2.x, 2) + std::powf(point1.position.y - vect2.y, 2));
+}
+
 void UIScanImageWindow::CheckForDrawing()
 {
 	bool isDraggedNow = ImGui::IsWindowHovered() && ImGui::GetIO().MouseDown[0];
+	std::vector<Path>& paths = m_View->GetData().at(m_Depth).paths;
 
 	if (!m_IsDraggedOver && isDraggedNow)
 	{
 		m_IsDraggedOver = true;
 
-		m_Paths.emplace_back();
-		m_Paths.back().pathID = m_Paths.size() == 1 ? 1 : (++m_Paths.rbegin())->pathID + 1;
+		paths.emplace_back();
+		paths.back().pathID = paths.size() == 1 ? 1 : (++paths.rbegin())->pathID + 1;
 	}
 	else if (m_IsDraggedOver && !isDraggedNow)
 	{
@@ -158,14 +140,14 @@ void UIScanImageWindow::CheckForDrawing()
 		lol.x = lol.x / (m_Width - 32.0f);
 		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
 
-		if (std::ranges::find_if(m_Paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == m_Paths.back().points.end())
+		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == paths.back().points.end())
 		{
 			p.position = lol;
 			p.color.x = Path::s_Color[0];
 			p.color.y = Path::s_Color[1];
 			p.color.z = Path::s_Color[2];
 
-			m_Paths.back().points.push_back(p);
+			paths.back().points.push_back(p);
 		}
 	}
 }
@@ -181,8 +163,9 @@ void UIScanImageWindow::RenderScanAndBrushes()
 	GLCall(glDrawElements(GL_TRIANGLES, UIScanImageWindow::s_ScanIBO->GetCount(), GL_UNSIGNED_INT, nullptr));
 
 	size_t pointsCount = 0;
+	std::vector<Path>& paths = m_View->GetData().at(m_Depth).paths;
 
-	for (const auto& path : m_Paths)
+	for (const auto& path : paths)
 	{
 		pointsCount += path.points.size();
 	}
@@ -199,7 +182,7 @@ void UIScanImageWindow::RenderScanAndBrushes()
 	pointsData.reserve(pointsCount * 5);
 	pointsIndices.reserve(pointsCount * 2);
 
-	for (const auto& path : m_Paths)
+	for (const auto& path : paths)
 	{
 		if (!path.shoudlDraw)
 		{

@@ -1,11 +1,12 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "Layer.hpp"
 
 class View
 {
 private:
-	std::vector<float*> m_Data;
+	std::vector<Layer> m_Data;
 	unsigned int m_Depth = 0;
 	unsigned int m_Height = 0;
 	unsigned int m_Width = 0;
@@ -16,7 +17,7 @@ public:
 
 	float* GetBuffer(const unsigned int& index);
 
-	inline std::vector<float*> GetData() { return m_Data; }
+	inline std::vector<Layer>& GetData() { return m_Data; }
 	inline unsigned int GetWidth() { return m_Width; }
 	inline unsigned int GetHeight() { return m_Height; }
 	inline unsigned int GetDepth() { return m_Depth; }

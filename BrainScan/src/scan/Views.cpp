@@ -15,7 +15,7 @@ View::~View()
 {
 	for (int i = 0; i < m_Data.size(); i++)
 	{
-		delete[] m_Data[i];
+		delete[] m_Data[i].buffer;
 	}
 }
 
@@ -27,7 +27,7 @@ float* View::GetBuffer(const unsigned int& index)
 		return nullptr;
 	}
 
-	return m_Data.at(index);
+	return m_Data.at(index).buffer;
 }
 
 void View::InitializeView(unsigned int vectorSize, unsigned int bufferHeight, unsigned int bufferWidth)
@@ -39,7 +39,7 @@ void View::InitializeView(unsigned int vectorSize, unsigned int bufferHeight, un
 	m_Data.resize(vectorSize);       //Resize depth vector
 	for (int i = 0; i < vectorSize; i++)
 	{
-		m_Data[i] = new float[bufferWidth * bufferHeight];  //Allocate memory buffer
+		m_Data[i].buffer = new float[bufferWidth * bufferHeight];  //Allocate memory buffer
 	}
 }
 

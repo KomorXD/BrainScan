@@ -1,16 +1,13 @@
 #include "Scan.hpp"
 
+#include <future>
 #include <assert.h>
 #include <typeinfo>
 #include <cstdlib>
 #include <string>
 
 namespace sitk = itk::simple;
-Scan::Scan()
-{
-	m_Min = INT32_MAX;
-	m_Max = INT32_MIN;
-}
+
 bool Scan::SaveToFile(const std::string & inputImageFileName)
 {
     return false;
@@ -28,6 +25,7 @@ void Scan::CreateMockData(int size)
 
 void Scan::CreateMock(int size)
 {
+	FUNC_PROFILE();
 	sitk::PixelIDValueEnum pixelType = sitk::sitkInt32;
 
 	if (size <= 128)
@@ -35,39 +33,28 @@ void Scan::CreateMock(int size)
 
 	std::vector<unsigned int> imageSize(3, size);
 
-	// Create an image
-	//sitk::Image image(imageSize, pixelType);
-	
-	// Create a face image
 	std::vector<double> faceSize(3, 64.0);
 	std::vector<double> faceCenter(3, 64.0);;
 	sitk::Image face = sitk::GaussianSource(pixelType, imageSize, faceSize, faceCenter);
 
-	// Create eye images
 	std::vector<double> eyeSize(3, 5.0);
 	std::vector<double> eye1Center(3, 48.0);
 	std::vector<double> eye2Center = { 80.0, 48.0 , 52.0 };
 	sitk::Image eye1 = sitk::GaussianSource(pixelType, imageSize, eyeSize, eye1Center, 150);
 	sitk::Image eye2 = sitk::GaussianSource(pixelType, imageSize, eyeSize, eye2Center, 150);
 
-	// Apply the eyes to the face
 	face = face - eye1 - eye2;
 	face = sitk::BinaryThreshold(face, 200, 255, 255);
 
-	// Create the mouth
 	std::vector<double> mouthRadii = { 30.0, 20.0 , 25.0 };
 	std::vector<double> mouthCenter = { 64.0, 76.0 , 70.0 };
 	sitk::Image mouth = 255 - sitk::BinaryThreshold(
 		sitk::GaussianSource(pixelType, imageSize, mouthRadii, mouthCenter),
 		200, 255, 255);
 
-	// Paste the mouth onto the face
 	std::vector<unsigned int> mouthSize = { 64, 18 , 20 };
 	std::vector<int> mouthLoc = { 32, 76 , 14 };
 	face = sitk::Paste(face, mouth, mouthSize, mouthLoc, mouthLoc);
-
-	// Apply the face to the original image
-
 
 	sitk::CastImageFilter caster;
 	caster.SetOutputPixelType(sitk::sitkInt32);
@@ -96,8 +83,7 @@ bool Scan::LoadFromFile(const std::string & inputImageFileName)
 
 		sitk::CastImageFilter caster;
 		caster.SetOutputPixelType(sitk::sitkInt32);
-		m_Image = caster.Execute(image);
-		
+		m_Image = caster.Execute(image);		
 	}
 	catch (const std::exception& e)
 	{
@@ -106,7 +92,6 @@ bool Scan::LoadFromFile(const std::string & inputImageFileName)
 	}
 
 	ConvertToInternalViews();
-
     return true;
 }
 
@@ -127,31 +112,49 @@ void Scan::CreateViews()
 	CreateCoronalViewBasedOnAxialView();
 }
 
-void Scan::PopulateAxialView()
+static int s_Min = INT32_MAX;
+static int s_Max = INT32_MIN;
+
+static float NormalizeValue(int value)
+{
+	return (float)(value - s_Min) / (s_Max - s_Min);
+}
+
+static void SetPixelAtDepth(sitk::Image* image, View* axial, unsigned int depth)
 {
 	std::vector<unsigned int> pixelIndex;
-	unsigned int rowLength = m_Views.axial.GetWidth();
+	unsigned int rowLength = axial->GetWidth();
+
+	for (int h = 0; h < axial->GetHeight(); h++)
+	{
+		for (int w = 0; w < axial->GetWidth(); w++)
+		{
+			pixelIndex = { { static_cast<unsigned int>(w),
+							 static_cast<unsigned int>(h),
+							 static_cast<unsigned int>(depth)
+							} };
+
+			float value = NormalizeValue(image->GetPixelAsInt32(pixelIndex));
+			axial->GetBuffer(depth)[w + (rowLength * h)] = value;
+		}
+	}
+}
+
+void Scan::PopulateAxialView()
+{
+	FUNC_PROFILE();
+	std::vector<std::future<void>> futures;	
+	futures.reserve(m_Views.axial.GetDepth());
 
 	for (int d = 0; d < m_Views.axial.GetDepth(); d++)
 	{
-		for (int h = 0; h < m_Views.axial.GetHeight(); h++)
-		{
-			for (int w = 0; w < m_Views.axial.GetWidth(); w++)
-			{
-				pixelIndex = { { static_cast<unsigned int>(w),
-								 static_cast<unsigned int>(h),
-								 static_cast<unsigned int>(d)
-								} };
-
-				float value = NormalizeValue(m_Image.GetPixelAsInt32(pixelIndex));
-				m_Views.axial.GetBuffer(d)[w + (rowLength * h)] = value;
-			}
-		}
+		futures.push_back(std::async(std::launch::async, SetPixelAtDepth, &m_Image, &m_Views.axial, d));
 	}
 }
 
 void Scan::CreateSagittalViewBasedOnAxialView()
 {
+	FUNC_PROFILE();
 	unsigned int axialRowLength = m_Views.axial.GetWidth();
 
 	for (int w = 0; w < m_Views.axial.GetWidth(); w++)
@@ -169,6 +172,7 @@ void Scan::CreateSagittalViewBasedOnAxialView()
 
 void Scan::CreateCoronalViewBasedOnAxialView()
 {
+	FUNC_PROFILE();
 	unsigned int axialRowLength = m_Views.axial.GetWidth();
 	for (int h = 0; h < m_Views.axial.GetHeight(); h++)
 	{
@@ -185,7 +189,9 @@ void Scan::CreateCoronalViewBasedOnAxialView()
 
 void Scan::FindMinMax(View& view)
 {
+	FUNC_PROFILE();
 	std::vector<unsigned int> pixelIndex;
+	int pixelValue = 0;
 	for (int d = 0; d < view.GetDepth(); d++)
 	{
 		for (int h = 0; h < view.GetHeight(); h++)
@@ -196,22 +202,12 @@ void Scan::FindMinMax(View& view)
 									static_cast<unsigned int>(h),
 									static_cast<unsigned int>(d)
 								} };
-				int pixelValue = m_Image.GetPixelAsInt32(pixelIndex);
-				if (pixelValue < m_Min)
-				{
-					m_Min = pixelValue;
-				}
-				else if (pixelValue > m_Max)
-				{
-					m_Max = pixelValue;
-				}
+				pixelValue = m_Image.GetPixelAsInt32(pixelIndex);
+
+				s_Min = std::min(pixelValue, s_Min);
+				s_Max = std::max(pixelValue, s_Max);
 			}
 		}
 	}
-}
-
-float Scan::NormalizeValue(int value)
-{
-	return (float)(value - m_Min) / (m_Max - m_Min);
 }
 

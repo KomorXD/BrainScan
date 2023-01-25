@@ -3,34 +3,11 @@
 #include "IUIPanel.hpp"
 #include "imgui/imgui.h"
 #include "../OpenGL.hpp"
+#include "../scan/Views.h"
 
 #include <memory>
 #include <vector>
 
-struct Point
-{
-	ImVec2 position{ 0.0f, 0.0f };
-	ImVec4 color{ 0.0f, 1.0f, 0.0f, 1.0f };
-
-	float radius = 1.0f;
-};
-
-struct Path
-{
-	std::vector<Point> points;
-	bool shoudlDraw = true;
-	uint32_t pathID = 0;
-
-	static std::unique_ptr<VertexArray>  s_PathVAO;
-	static std::unique_ptr<VertexBuffer> s_PathVBO;
-	static std::unique_ptr<IndexBuffer>  s_PathIBO;
-	static std::unique_ptr<Shader>		 s_PathsShader;
-	
-	// Temporary before we have a proper tool class and tool settings subclass
-	static float s_Color[3];
-
-	static void InitializeBuffers();
-};
 
 class UIScanImageWindow : public IUIPanel
 {
@@ -43,7 +20,9 @@ class UIScanImageWindow : public IUIPanel
 		std::shared_ptr<Texture> m_ScanTexture;
 		std::shared_ptr<Framebuffer> m_FB;
 		std::shared_ptr<Shader> m_Shader;
-		std::vector<Path> m_Paths;
+		
+		View* m_View = nullptr;
+		int32_t m_Depth = 75;
 
 		bool m_IsDraggedOver = false;
 
@@ -56,8 +35,8 @@ class UIScanImageWindow : public IUIPanel
 		void SetScanTexture(std::shared_ptr<Texture>& text);
 		void SetShader(std::shared_ptr<Shader>& shader);
 		void SetImageRatio(float ratio);
-
-		inline std::vector<Path>* GetBrushPaths() { return &m_Paths; }
+		void SetView(View* view);
+		inline std::vector<Path>* GetBrushPaths() { return m_View ? &m_View->GetData().at(m_Depth).paths : nullptr; }
 
 		virtual void Render() override;
 

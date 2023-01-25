@@ -36,13 +36,13 @@ TEST(ScanDimensionsTest, TestScanDimensionsCoronal)
 
 ::testing::AssertionResult AreAllValuesBetweenInclusive(View* view, int from, int to)
 {
-	std::vector<float*> data = view->GetData();
+	std::vector<Layer> data = view->GetData();
 	for (int i = 0; i < data.size(); i++)
 	{
 		for (size_t j = 0; j < view->GetDepth(); j++)
 		{
-			if(!(data[j][i] >= from) && (data[j][i] <= to))
-				return ::testing::AssertionFailure() << data[j][i] << " is outside the range " << from << " to " << to << " (Layer: "<<j<<" Buffer index: "<<i;
+			if(!(data[j].buffer[i] >= from) && (data[j].buffer[i] <= to))
+				return ::testing::AssertionFailure() << data[j].buffer[i] << " is outside the range " << from << " to " << to << " (Layer: "<<j<<" Buffer index: "<<i;
 		}
 	}
 	return ::testing::AssertionSuccess();
