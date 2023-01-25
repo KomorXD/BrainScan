@@ -139,7 +139,12 @@ class Shader
 		void SetUniform1i(const std::string& name, int32_t val);
 		void SetUniform1f(const std::string& name, float val);
 
+		void ReloadShader();
+
 	private:
+		std::string m_VertexShaderPath;
+		std::string m_FragmentShaderPath;
+
 		uint32_t m_ID;
 		std::unordered_map<std::string, int32_t> m_UniformLocations;
 
