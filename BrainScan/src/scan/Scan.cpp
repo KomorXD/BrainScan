@@ -112,8 +112,46 @@ void Scan::CreateViews()
 	CreateCoronalViewBasedOnAxialView();
 }
 
-static int s_Min = INT32_MAX;
-static int s_Max = INT32_MIN;
+static std::atomic<int> s_Min = INT32_MAX;
+static std::atomic<int> s_Max = INT32_MIN;
+
+static void FindMinMaxAtDepth(sitk::Image* image, View* axial, unsigned int depth)
+{
+	std::vector<unsigned int> pixelIndex;
+	int pixelValue = 0;
+	for (int h = 0; h < axial->GetHeight(); h++)
+	{
+		for (int w = 0; w < axial->GetWidth(); w++)
+		{
+			pixelIndex = { { static_cast<unsigned int>(w),
+								static_cast<unsigned int>(h),
+								static_cast<unsigned int>(depth)
+							} };
+			pixelValue = image->GetPixelAsInt32(pixelIndex);
+
+			if (s_Min > pixelValue)
+			{
+				s_Min = pixelValue;
+			}
+
+			if (s_Max < pixelValue) 
+			{
+				s_Max = pixelValue;
+			}
+		}
+	}
+}
+
+void Scan::FindMinMax(View& view)
+{
+	FUNC_PROFILE();
+	std::vector<std::future<void>> futures;
+	futures.reserve(m_Views.axial.GetDepth());
+	for (int d = 0; d < view.GetDepth(); d++)
+	{
+		futures.push_back(std::async(std::launch::async, FindMinMaxAtDepth, &m_Image, &m_Views.axial, d));
+	}
+}
 
 static float NormalizeValue(int value)
 {
@@ -187,27 +225,4 @@ void Scan::CreateCoronalViewBasedOnAxialView()
 	}
 }
 
-void Scan::FindMinMax(View& view)
-{
-	FUNC_PROFILE();
-	std::vector<unsigned int> pixelIndex;
-	int pixelValue = 0;
-	for (int d = 0; d < view.GetDepth(); d++)
-	{
-		for (int h = 0; h < view.GetHeight(); h++)
-		{
-			for (int w = 0; w < view.GetWidth(); w++)
-			{
-				pixelIndex = { { static_cast<unsigned int>(w),
-									static_cast<unsigned int>(h),
-									static_cast<unsigned int>(d)
-								} };
-				pixelValue = m_Image.GetPixelAsInt32(pixelIndex);
-
-				s_Min = std::min(pixelValue, s_Min);
-				s_Max = std::max(pixelValue, s_Max);
-			}
-		}
-	}
-}
 

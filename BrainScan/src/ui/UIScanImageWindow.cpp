@@ -46,7 +46,7 @@ void UIScanImageWindow::SetView(View* view)
 	}
 
 	m_View = view;
-
+	m_Depth = view->GetDepth() / 2;
 	m_ScanTexture = std::make_shared<Texture>(view->GetData()[m_Depth].buffer, view->GetWidth(), view->GetHeight());
 }
 

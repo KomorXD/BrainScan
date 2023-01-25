@@ -22,7 +22,7 @@ class UIScanImageWindow : public IUIPanel
 		std::shared_ptr<Shader> m_Shader;
 		
 		View* m_View = nullptr;
-		int32_t m_Depth = 75;
+		int32_t m_Depth = 0;
 
 		bool m_IsDraggedOver = false;
 

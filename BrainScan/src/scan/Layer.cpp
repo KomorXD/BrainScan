@@ -5,7 +5,7 @@ std::unique_ptr<VertexBuffer> Path::s_PathVBO;
 std::unique_ptr<IndexBuffer>  Path::s_PathIBO;
 std::unique_ptr<Shader>		  Path::s_PathsShader;
 
-float Path::s_Color[3];
+float Path::s_Color[3]{1.0f, 0.0f, 0.0f};
 
 void Path::InitializeBuffers()
 {
