@@ -36,8 +36,8 @@ void Path::InitializeBuffers()
 	s_PathIBO->Unbind();
 }
 
-UIScanImageWindow::UIScanImageWindow(int scanID, float posX, float posY, float height)
-	: IUIPanel(posX, posY), m_ID(scanID)
+UIScanImageWindow::UIScanImageWindow(const std::string& label, float posX, float posY, float height)
+	: IUIPanel(posX, posY), m_Label(label)
 {
 	m_FB = std::make_shared<Framebuffer>();
 	m_FB->UnbindBuffer();
@@ -47,7 +47,7 @@ UIScanImageWindow::UIScanImageWindow(int scanID, float posX, float posY, float h
 	m_Width = windowSize.x / 3.0f;
 	m_Height = height;
 
-	LOG_INFO("Initialized scan panel panel #{}", scanID);
+	LOG_INFO("Initialized {} scan panel", label);
 
 	m_FB->BindBuffer();
 	m_FB->AttachTexture((uint32_t)m_Width * 3, (uint32_t)m_Height * 2);
@@ -79,11 +79,11 @@ void UIScanImageWindow::Render()
 	ImGui::SetNextWindowSize(ImVec2(m_Width, m_Height));
 	ImGui::SetNextWindowPos(ImVec2(m_PosX, m_PosY));
 
-	ImGui::Begin(std::format("Scan image axis #{}", m_ID).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+	ImGui::Begin(std::format("Scan - {} plane", m_Label).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 	Update();
 
-	ImGui::BeginChild(std::format("scan#{}", m_ID).c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
+	ImGui::BeginChild(m_Label.c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
 
 	CheckForDrawing();
 

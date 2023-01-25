@@ -38,7 +38,7 @@ class UIScanImageWindow : public IUIPanel
 		static std::unique_ptr<VertexArray> s_ScanVAO;
 		static std::unique_ptr<IndexBuffer> s_ScanIBO;
 
-		int m_ID;
+		std::string m_Label;
 		
 		std::shared_ptr<Texture> m_ScanTexture;
 		std::shared_ptr<Framebuffer> m_FB;
@@ -48,7 +48,7 @@ class UIScanImageWindow : public IUIPanel
 		bool m_IsDraggedOver = false;
 
 	public:
-		UIScanImageWindow(int scanID, float posX, float posY, float height);
+		UIScanImageWindow(const std::string& label, float posX, float posY, float height);
 		virtual ~UIScanImageWindow() = default;
 
 		void SetScanTexture(std::shared_ptr<Texture>& text);
