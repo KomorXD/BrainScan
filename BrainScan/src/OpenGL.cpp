@@ -377,7 +377,8 @@ Texture::Texture(float* data, uint32_t width, uint32_t height)
 
 Texture::~Texture()
 {
-	GLCall(glDeleteTextures(1, &m_RendererID));
+	if(m_RendererID != 0)
+		GLCall(glDeleteTextures(1, &m_RendererID));
 }
 
 void Texture::Bind(unsigned int slot) const
