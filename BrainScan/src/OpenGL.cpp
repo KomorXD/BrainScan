@@ -319,15 +319,15 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& fs)
 	{
 		int len = 0;
 
-		GLCall(glGetShaderiv(program, GL_INFO_LOG_LENGTH, &len));
+		GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len));
 
 		char* message = (char*)_malloca(len * sizeof(char));
 
-		GLCall(glGetShaderInfoLog(program, len, &len, message));
+		GLCall(glGetProgramInfoLog(program, len, &len, message));
 
-		std::cout << "[ERROR] Failed to link shaders:\n" << message << ".\n";
+		std::cout << "[ERROR] Failed to link shaders: " << message << ".\n";
 
-		GLCall(glDeleteShader(program));
+		GLCall(glDeleteProgram(program));
 
 		return 0;
 	}
@@ -359,15 +359,15 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& gs, cons
 	{
 		int len = 0;
 
-		GLCall(glGetShaderiv(program, GL_INFO_LOG_LENGTH, &len));
-
+		GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len));
+		
 		char* message = (char*)_malloca(len * sizeof(char));
 
-		GLCall(glGetShaderInfoLog(program, len, &len, message));
+		GLCall(glGetProgramInfoLog(program, len, &len, message));
 
-		std::cout << "[ERROR] Failed to link shaders:\n" << message << ".\n";
+		std::cout << "[ERROR] Failed to link shaders: " << message << ".\n";
 
-		GLCall(glDeleteShader(program));
+		GLCall(glDeleteProgram(program));
 
 		return 0;
 	}
@@ -381,7 +381,7 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& gs, cons
 
 int32_t Shader::GetUniformLocation(const std::string& name)
 {
-	if(m_UniformLocations.find(name) != m_UniformLocations.end())
+	if(m_UniformLocations.contains(name))
 		return m_UniformLocations[name];
 
 	GLCall(int32_t location = glGetUniformLocation(m_ID, name.c_str()));
