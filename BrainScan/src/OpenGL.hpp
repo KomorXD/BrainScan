@@ -8,9 +8,13 @@
 
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #define ASSERT(x) if(!(x)) __debugbreak()
+#ifdef BS_DEBUG
 #define GLCall(f) GLClearErrors();\
 	f;\
 	ASSERT(GLCheckForError(#f, __FILENAME__, __LINE__))
+#else
+#define GLCall(f) f
+#endif
 
 void GLClearErrors();
 
@@ -131,6 +135,7 @@ class Shader
 {
 	public:
 		Shader(const std::string& vs, const std::string& fs);
+		Shader(const std::string& vs, const std::string& gs, const std::string& fs);
 		~Shader();
 
 		void Bind() const;
@@ -144,6 +149,7 @@ class Shader
 	private:
 		std::string m_VertexShaderPath;
 		std::string m_FragmentShaderPath;
+		std::string m_GeometryShaderPath;
 
 		uint32_t m_ID;
 		std::unordered_map<std::string, int32_t> m_UniformLocations;
@@ -151,6 +157,7 @@ class Shader
 		std::string ShaderParse(const std::string& filepath);
 		uint32_t ShaderCompile(uint32_t type, const std::string& sourceCode);
 		uint32_t ShaderCreate(const std::string& vs, const std::string& fs);
+		uint32_t ShaderCreate(const std::string& vs, const std::string& gs, const std::string& fs);
 
 		int32_t GetUniformLocation(const std::string& name);
 };
