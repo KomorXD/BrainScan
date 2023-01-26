@@ -200,6 +200,12 @@ Shader::Shader(const std::string& vs, const std::string& fs)
 	m_ID = ShaderCreate(ShaderParse(vs), ShaderParse(fs));
 }
 
+Shader::Shader(const std::string& vs, const std::string& gs, const std::string& fs)
+	: m_VertexShaderPath(vs), m_GeometryShaderPath(gs), m_FragmentShaderPath(fs), m_ID(0)
+{
+	m_ID = ShaderCreate(ShaderParse(vs), ShaderParse(gs), ShaderParse(fs));
+}
+
 Shader::~Shader()
 {
 	GLCall(glDeleteProgram(m_ID));
@@ -230,7 +236,14 @@ void Shader::ReloadShader()
 	Unbind();
 	GLCall(glDeleteProgram(m_ID));
 
-	m_ID = ShaderCreate(ShaderParse(m_VertexShaderPath), ShaderParse(m_FragmentShaderPath));
+	if (m_GeometryShaderPath.empty())
+	{
+		m_ID = ShaderCreate(ShaderParse(m_VertexShaderPath), ShaderParse(m_FragmentShaderPath));
+
+		return;
+	}
+
+	m_ID = ShaderCreate(ShaderParse(m_VertexShaderPath), ShaderParse(m_GeometryShaderPath), ShaderParse(m_FragmentShaderPath));
 }
 
 std::string Shader::ShaderParse(const std::string& filepath)
@@ -306,15 +319,15 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& fs)
 	{
 		int len = 0;
 
-		GLCall(glGetShaderiv(program, GL_INFO_LOG_LENGTH, &len));
+		GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len));
 
 		char* message = (char*)_malloca(len * sizeof(char));
 
-		GLCall(glGetShaderInfoLog(program, len, &len, message));
+		GLCall(glGetProgramInfoLog(program, len, &len, message));
 
-		std::cout << "[ERROR] Failed to link shaders:\n" << message << ".\n";
+		std::cout << "[ERROR] Failed to link shaders: " << message << ".\n";
 
-		GLCall(glDeleteShader(program));
+		GLCall(glDeleteProgram(program));
 
 		return 0;
 	}
@@ -325,9 +338,50 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& fs)
 	return program;
 }
 
+uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& gs, const std::string& fs)
+{
+	GLCall(uint32_t program = glCreateProgram());
+	uint32_t vsID = ShaderCompile(GL_VERTEX_SHADER, vs);
+	uint32_t gsID = ShaderCompile(GL_GEOMETRY_SHADER, gs);
+	uint32_t fsID = ShaderCompile(GL_FRAGMENT_SHADER, fs);
+
+	GLCall(glAttachShader(program, vsID));
+	GLCall(glAttachShader(program, gsID));
+	GLCall(glAttachShader(program, fsID));
+	GLCall(glLinkProgram(program));
+	GLCall(glValidateProgram(program));
+
+	int success = 0;
+
+	GLCall(glGetProgramiv(program, GL_LINK_STATUS, &success));
+
+	if (success == GL_FALSE)
+	{
+		int len = 0;
+
+		GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len));
+		
+		char* message = (char*)_malloca(len * sizeof(char));
+
+		GLCall(glGetProgramInfoLog(program, len, &len, message));
+
+		std::cout << "[ERROR] Failed to link shaders: " << message << ".\n";
+
+		GLCall(glDeleteProgram(program));
+
+		return 0;
+	}
+
+	GLCall(glDeleteShader(vsID));
+	GLCall(glDeleteShader(gsID));
+	GLCall(glDeleteShader(fsID));
+
+	return program;
+}
+
 int32_t Shader::GetUniformLocation(const std::string& name)
 {
-	if(m_UniformLocations.find(name) != m_UniformLocations.end())
+	if(m_UniformLocations.contains(name))
 		return m_UniformLocations[name];
 
 	GLCall(int32_t location = glGetUniformLocation(m_ID, name.c_str()));

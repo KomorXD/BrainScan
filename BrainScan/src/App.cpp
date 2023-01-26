@@ -28,6 +28,7 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	m_Window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(), nullptr, nullptr);
 
@@ -41,7 +42,7 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 	}
 
 	glfwMakeContextCurrent(m_Window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{

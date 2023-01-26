@@ -18,9 +18,9 @@ struct Path
 	uint32_t pathID = 0;
 
 	static float s_Color[3];
+	static float s_Radius;
 	static std::unique_ptr<VertexArray>  s_PathVAO;
 	static std::unique_ptr<VertexBuffer> s_PathVBO;
-	static std::unique_ptr<IndexBuffer>  s_PathIBO;
 	static std::unique_ptr<Shader>		 s_PathsShader;
 
 	static void InitializeBuffers();
