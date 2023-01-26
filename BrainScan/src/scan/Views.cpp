@@ -62,7 +62,7 @@ void View::InitializeView(unsigned int vectorSize, unsigned int bufferHeight, un
 	m_CurrentDepth = vectorSize / 2;
 
 	m_Data.resize(vectorSize);       //Resize depth vector
-	for (int i = 0; i < vectorSize; i++)
+	for (uint32_t i = 0; i < vectorSize; i++)
 	{
 		m_Data[i].buffer = new float[bufferWidth * bufferHeight];  //Allocate memory buffer
 	}
