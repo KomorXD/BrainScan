@@ -6,6 +6,8 @@ int main(int argc, char** argv)
 {
 #ifdef BS_PROD
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
+#else
+	ShowWindow(GetConsoleWindow(), SW_SHOW);
 #endif
 
 	Logger::Init();
