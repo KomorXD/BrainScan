@@ -3,42 +3,33 @@
 #include "../Core.hpp"
 #include "../App.hpp"
 
-BasicScene::BasicScene(const std::string& inputImageFileName)
+BasicScene::BasicScene(std::unique_ptr<Scan>&& scan)
 {
 	FUNC_PROFILE();
 
 	m_Scan = std::move(scan);
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
-	//m_AxialTexture = std::make_shared<Texture>(m_Scan.GetAxial()->GetData()[40], m_Scan.GetAxial()->GetWidth(), m_Scan.GetAxial()->GetHeight());
-	//m_CoronalTexture = std::make_shared<Texture>(m_Scan.GetCoronal()->GetData()[40], m_Scan.GetCoronal()->GetWidth(), m_Scan.GetCoronal()->GetHeight());
-	//m_SagittalTexture = std::make_shared<Texture>(m_Scan.GetSagittal()->GetData()[40], m_Scan.GetSagittal()->GetWidth(), m_Scan.GetSagittal()->GetHeight());
 
+	//File menu
 	m_MenuBar = std::make_unique<UIMenuBar>();
-
 	m_MenuBar->PushMenu("File");
 	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() { LOG_INFO("File/Open pressed."); });
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
 	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
 
+	//Options menu
 	m_MenuBar->PushMenu("Options");
 	m_MenuBar->PushMenuItem("Reload shaders", "", [this]() { m_Shader->ReloadShader(); Path::s_PathsShader->ReloadShader(); });
-	m_MenuBar->PushMenuItem("nwm1", "Ctrl + 1", []() { LOG_INFO("Options/nwm1 pressed."); });
-	m_MenuBar->PushMenuItem("nwm2", "Ctrl + 2", []() { LOG_INFO("Options/nwm2 pressed."); });
-	m_MenuBar->PushMenuItem("nwm3", "Ctrl + 3", []() { LOG_INFO("Options/nwm3 pressed."); });
 
+	//Help menu
 	m_MenuBar->PushMenu("Help");
-	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("jest sroda moje ziomki"); });
+	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("Help/Info pressed"); });
 
+	//Toolbar
 	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
+	m_ToolBar->AddButton([]() { LOG_INFO("Button 1 pressed."); });
 
-	for (int i = 0; i < 10; ++i)
-	{
-		m_ToolBar->AddButton([i]()
-			{
-				LOG_INFO("Button #{} pressed.", i + 1);
-			});
-	}
-
+	m_CurrentTool = std::make_unique<ToolBrush>(this);
 	m_ToolSettings = std::make_unique<UIBrushSettings>(this, m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 
 	View* axial = m_Scan->GetAxial();
@@ -82,16 +73,6 @@ PathsPack BasicScene::RequestPathsPack()
 	return paths;
 }
 
-void BasicScene::Input()
-{
-
-}
-
-void BasicScene::Update()
-{
-
-}
-
 void BasicScene::Render()
 {
 	m_MenuBar->Render();
@@ -105,6 +86,16 @@ void BasicScene::Render()
 }
 
 void BasicScene::SetTool()
+{
+
+}
+
+void BasicScene::Input()
+{
+
+}
+
+void BasicScene::Update()
 {
 
 }

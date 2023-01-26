@@ -3,6 +3,8 @@
 #include "IScene.hpp"
 #include "../OpenGL.hpp"
 #include "../scan/Scan.hpp"
+#include "../tools/ITool.hpp"
+#include "../tools/ToolBrush.hpp"
 
 #include <vector>
 #include <memory>
@@ -15,6 +17,7 @@ class BasicScene : public IScene
 		std::unique_ptr<UIToolSettings> m_ToolSettings;
 
 		std::vector<UIScanImageWindow>  m_ScanWindows;
+		std::unique_ptr<ITool> m_CurrentTool;
 
 		std::unique_ptr <Scan> m_Scan;
 
