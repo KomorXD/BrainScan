@@ -14,7 +14,6 @@ AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan)
 	glfwSetScrollCallback(App::GetInstance().GetWindow(), [](GLFWwindow* window, double xOffset, double yOffset)
 		{
 			AdvancedScene* thisScene = (AdvancedScene*)glfwGetWindowUserPointer(window);
-
 			thisScene->OnScroll(yOffset);
 		});
 
@@ -31,14 +30,11 @@ AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan)
 
 	m_MenuBar->PushMenu("Options");
 	m_MenuBar->PushMenuItem("Reload shaders", "", [this]() { m_Shader->ReloadShader(); Path::s_PathsShader->ReloadShader(); });
-	m_MenuBar->PushMenuItem("nwm1", "Ctrl + 1", []() { LOG_INFO("Options/nwm1 pressed."); });
-	m_MenuBar->PushMenuItem("nwm2", "Ctrl + 2", []() { LOG_INFO("Options/nwm2 pressed."); });
-	m_MenuBar->PushMenuItem("nwm3", "Ctrl + 3", []() { LOG_INFO("Options/nwm3 pressed."); });
 	m_MenuBar->PushMenuItem("Fill", "Ctrl + 3", []() { GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)); });
 	m_MenuBar->PushMenuItem("Line", "Ctrl + 3", []() { GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)); });
 
 	m_MenuBar->PushMenu("Help");
-	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("jest sroda moje ziomki"); });
+	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("Help/Info."); });
 
 	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
 
@@ -94,16 +90,6 @@ PathsPack AdvancedScene::RequestPathsPack()
 	return paths;
 }
 
-void AdvancedScene::Input()
-{
-	
-}
-
-void AdvancedScene::Update()
-{
-	
-}
-
 void AdvancedScene::Render()
 {
 	m_MenuBar->Render();
@@ -114,11 +100,6 @@ void AdvancedScene::Render()
 	{
 		scanWindow.Render();
 	}
-}
-
-void AdvancedScene::SetTool()
-{
-	// TODO: implement xd
 }
 
 void AdvancedScene::OnScroll(double offset)
@@ -132,4 +113,14 @@ void AdvancedScene::OnScroll(double offset)
 			break;
 		}
 	}
+}
+
+void AdvancedScene::Input()
+{
+}
+void AdvancedScene::Update()
+{
+}
+void AdvancedScene::SetTool()
+{
 }
