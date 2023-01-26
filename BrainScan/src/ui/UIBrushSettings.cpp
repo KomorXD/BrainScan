@@ -24,8 +24,9 @@ void UIBrushSettings::Render()
 
 	Update();
 
-	// Temporary before we have a proper tool class and tool settings subclass
 	ImGui::ColorPicker3("Brush color", Path::s_Color, ImGuiColorEditFlags_PickerHueWheel);
+	ImGui::NewLine();
+	ImGui::SliderFloat("Brush thickness", &Path::s_Radius, 1.0f, 5.0f);
 
 	ImGui::Text("Current brushes");
 
