@@ -696,6 +696,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\PathsShader.frag" />
+    <None Include="res\shaders\PathsShader.geom" />
     <None Include="res\shaders\PathsShader.vert" />
     <None Include="res\shaders\TextureShader.frag" />
     <None Include="res\shaders\TextureShader.vert" />
