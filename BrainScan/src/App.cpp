@@ -41,7 +41,7 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 	}
 
 	glfwMakeContextCurrent(m_Window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
