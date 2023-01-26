@@ -128,6 +128,11 @@ void UIScanImageWindow::CheckForDrawing()
 	else if (m_IsDraggedOver && !isDraggedNow)
 	{
 		m_IsDraggedOver = false;
+
+		if (paths.back().points.size() < 2)
+		{
+			paths.back().points.pop_back();
+		}
 	}
 
 	if (ImGui::IsWindowHovered() && m_IsDraggedOver)
@@ -140,7 +145,7 @@ void UIScanImageWindow::CheckForDrawing()
 		lol.x = lol.x / (m_Width - 32.0f);
 		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
 
-		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == paths.back().points.end())
+		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.01f; }) == paths.back().points.end())
 		{
 			p.position = lol;
 			p.color.x = Path::s_Color[0];
@@ -184,7 +189,7 @@ void UIScanImageWindow::RenderScanAndBrushes()
 
 	for (const auto& path : paths)
 	{
-		if (!path.shoudlDraw)
+		if (!path.shoudlDraw || path.points.size() < 2)
 		{
 			continue;
 		}
