@@ -16,6 +16,8 @@ class App
 		void SetNextScene(std::unique_ptr<IScene>&& newScene);
 		void SetWindowShouldClose(bool status);
 
+		inline GLFWwindow* GetWindow() { return m_Window; }
+
 		static App& GetInstance();
 
 	private:
