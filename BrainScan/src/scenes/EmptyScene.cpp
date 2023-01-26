@@ -28,6 +28,12 @@ EmptyScene::EmptyScene()
 		{ 
 			ImGuiFileDialog::Instance()->OpenDialog("ChooseScan", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
 		});
+	
+	m_MenuBar->PushMenuItem("Open sample data", "Ctrl + T", [&]()
+		{
+			m_Scan->CreateMockData();
+			s_ShouldShowModal = true;		
+		});
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
 	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
 
