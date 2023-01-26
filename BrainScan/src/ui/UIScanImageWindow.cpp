@@ -5,8 +5,6 @@
 
 #include <format>
 
-#define BUFFER_OFFSET(offset) (static_cast<uint8_t*>(0) + (offset))
-
 std::unique_ptr<VertexArray> UIScanImageWindow::s_ScanVAO;
 std::unique_ptr<IndexBuffer> UIScanImageWindow::s_ScanIBO;
 
@@ -55,7 +53,7 @@ void UIScanImageWindow::Render()
 	ImGui::SetNextWindowSize(ImVec2(m_Width, m_Height));
 	ImGui::SetNextWindowPos(ImVec2(m_PosX, m_PosY));
 
-	ImGui::Begin(std::format("Scan - {} plane", m_Label).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+	ImGui::Begin(std::format("{} plane", m_Label).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 	Update();
 
@@ -128,11 +126,6 @@ void UIScanImageWindow::CheckForDrawing()
 	else if (m_IsDraggedOver && !isDraggedNow)
 	{
 		m_IsDraggedOver = false;
-
-		if (paths.back().points.size() < 2)
-		{
-			paths.back().points.pop_back();
-		}
 	}
 
 	if (ImGui::IsWindowHovered() && m_IsDraggedOver)
@@ -145,12 +138,15 @@ void UIScanImageWindow::CheckForDrawing()
 		lol.x = lol.x / (m_Width - 32.0f);
 		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
 
-		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.01f; }) == paths.back().points.end())
+		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == paths.back().points.end())
 		{
 			p.position = lol;
+
 			p.color.x = Path::s_Color[0];
 			p.color.y = Path::s_Color[1];
 			p.color.z = Path::s_Color[2];
+			
+			p.radius = Path::s_Radius;
 
 			paths.back().points.push_back(p);
 		}
@@ -168,66 +164,43 @@ void UIScanImageWindow::RenderScanAndBrushes()
 	GLCall(glDrawElements(GL_TRIANGLES, UIScanImageWindow::s_ScanIBO->GetCount(), GL_UNSIGNED_INT, nullptr));
 
 	size_t pointsCount = 0;
-	std::vector<Path>& paths = m_View->GetData().at(m_Depth).paths;
+	const std::vector<Path>& paths = m_View->GetData().at(m_Depth).paths;
 
 	for (const auto& path : paths)
 	{
-		pointsCount += path.points.size();
+		pointsCount += path.shoudlDraw ? path.points.size() : 0;
 	}
 
 	std::vector<float> pointsData;
-	std::vector<uint32_t> pointsIndices;
 
-	std::vector<GLsizei> count;
-	std::vector<GLvoid*> idcs;
-
-	uint32_t currIndex = 0;
-	uint32_t offset = 0;
-
-	pointsData.reserve(pointsCount * 5);
-	pointsIndices.reserve(pointsCount * 2);
+	pointsData.reserve(pointsCount * 6);
 
 	for (const auto& path : paths)
 	{
-		if (!path.shoudlDraw || path.points.size() < 2)
+		if (!path.shoudlDraw)
 		{
 			continue;
 		}
 
-		int32_t indices = 0;
-
-		idcs.push_back(BUFFER_OFFSET(offset * sizeof(uint32_t)));
-
-		const std::vector<Point>& pts = path.points;
-
-		for (const auto& point : pts)
+		for (const auto& point : path.points)
 		{
 			pointsData.push_back(point.position.x);
 			pointsData.push_back(point.position.y);
+
 			pointsData.push_back(point.color.x);
 			pointsData.push_back(point.color.y);
 			pointsData.push_back(point.color.z);
 
-			pointsIndices.push_back(currIndex++);
-
-			++indices;
+			pointsData.push_back(point.radius);
 		}
-
-		count.push_back(std::max(indices - 1, 0));
-		offset += offset == 0 ? indices : std::max(indices - 1, 0);
-
-		++currIndex;
 	}
 
 	Path::s_PathsShader->Bind();
 	Path::s_PathVAO->Bind();
-	Path::s_PathVBO->Bind();
-	Path::s_PathIBO->Bind();
 
 	Path::s_PathVBO->UpdateBuffer(pointsData.data(), pointsData.size() * sizeof(float));
-	Path::s_PathIBO->UpdateBuffer(pointsIndices.data(), pointsIndices.size());
 
-	GLCall(glMultiDrawElements(GL_LINE_STRIP, count.data(), GL_UNSIGNED_INT, idcs.data(), idcs.size()));
+	GLCall(glDrawArrays(GL_POINTS, 0, pointsData.size() / 6));
 
 	m_FB->UnbindBuffer();
 	m_FB->BindTexture(1);
