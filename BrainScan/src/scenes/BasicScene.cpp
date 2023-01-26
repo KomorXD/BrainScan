@@ -2,10 +2,20 @@
 #include "imgui/imgui.h"
 #include "../Core.hpp"
 #include "../App.hpp"
+#include "../tools/ToolBrush.hpp"
+
+#include <GLFW/glfw3.h>
 
 BasicScene::BasicScene(std::unique_ptr<Scan>&& scan)
 {
 	FUNC_PROFILE();
+
+	glfwSetWindowUserPointer(App::GetInstance().GetWindow(), this);
+	glfwSetScrollCallback(App::GetInstance().GetWindow(), [](GLFWwindow* window, double xOffset, double yOffset)
+		{
+			BasicScene* thisScene = (BasicScene*)glfwGetWindowUserPointer(window);
+			thisScene->OnScroll(yOffset);
+		});
 
 	m_Scan = std::move(scan);
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
@@ -82,6 +92,19 @@ void BasicScene::Render()
 	for (auto& scanWindow : m_ScanWindows)
 	{
 		scanWindow.Render();
+	}
+}
+
+void BasicScene::OnScroll(double offset)
+{
+	ImGui::GetIO().AddMouseWheelEvent(0.0f, (float)offset);
+
+	for (auto& scanWindow : m_ScanWindows)
+	{
+		if (scanWindow.TryToHandleScroll(offset))
+		{
+			break;
+		}
 	}
 }
 
