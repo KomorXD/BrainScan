@@ -106,9 +106,9 @@ void UIScanImageWindow::InitializeBuffers(uint32_t width, uint32_t height)
 	s_ScanIBO->Unbind();
 }
 
-static float dist(const Point& point1, const ImVec2& vect2)
+static float dist(const ImVec2& first, const ImVec2& second)
 {
-	return std::sqrtf(std::powf(point1.position.x - vect2.x, 2) + std::powf(point1.position.y - vect2.y, 2));
+	return std::sqrtf(std::powf(first.x - second.x, 2) + std::powf(first.y - second.y, 2));
 }
 
 void UIScanImageWindow::CheckForDrawing()
@@ -132,23 +132,61 @@ void UIScanImageWindow::CheckForDrawing()
 	{
 		ImVec2 screenPos = ImGui::GetCursorScreenPos();
 		ImVec2 pos = ImGui::GetIO().MousePos;
-		ImVec2 lol(pos.x - screenPos.x, pos.y - screenPos.y);
-		Point p;
+		ImVec2 translatedImagePos(pos.x - screenPos.x, pos.y - screenPos.y);
+		Point newPoint;
 
-		lol.x = lol.x / (m_Width - 32.0f);
-		lol.y = lol.y / (m_Height - ImGui::GetFontSize() * 1.7f);
+		translatedImagePos.x = translatedImagePos.x / (m_Width - 32.0f);
+		translatedImagePos.y = translatedImagePos.y / (m_Height - ImGui::GetFontSize() * 1.7f);
 
-		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point, lol) < 0.001f; }) == paths.back().points.end())
+		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point.position, translatedImagePos) < 0.001f; }) == paths.back().points.end())
 		{
-			p.position = lol;
+			newPoint.position = translatedImagePos;
 
-			p.color.x = Path::s_Color[0];
-			p.color.y = Path::s_Color[1];
-			p.color.z = Path::s_Color[2];
+			newPoint.color.x = Path::s_Color[0];
+			newPoint.color.y = Path::s_Color[1];
+			newPoint.color.z = Path::s_Color[2];
 			
-			p.radius = Path::s_Radius;
+			newPoint.radius = Path::s_Radius;
 
-			paths.back().points.push_back(p);
+			float divisor = 350.0f;
+
+			if (!paths.back().points.empty())
+			{
+				float distanceBetweenPoints = dist(newPoint.position, paths.back().points.back().position);
+
+				if (distanceBetweenPoints > newPoint.radius / divisor)
+				{
+					ImVec2 otherPos = paths.back().points.back().position;
+					ImVec2 dir = ImVec2(otherPos.x - newPoint.position.x, otherPos.y - newPoint.position.y);
+
+					dir.x /= distanceBetweenPoints;
+					dir.y /= distanceBetweenPoints;
+					dir.x *= newPoint.radius / divisor;
+					dir.y *= newPoint.radius / divisor;
+
+					ImVec2 currPos(newPoint.position.x + dir.x, newPoint.position.y + dir.y);
+
+					while (dist(otherPos, currPos) > newPoint.radius / divisor)
+					{
+						Point fillingPoint;
+
+						fillingPoint.position = currPos;
+
+						fillingPoint.color.x = Path::s_Color[0];
+						fillingPoint.color.y = Path::s_Color[1];
+						fillingPoint.color.z = Path::s_Color[2];
+
+						fillingPoint.radius = Path::s_Radius;
+
+						paths.back().points.push_back(fillingPoint);
+
+						currPos.x += dir.x;
+						currPos.y += dir.y;
+					}
+				}
+			}
+
+			paths.back().points.push_back(newPoint);
 		}
 	}
 }
