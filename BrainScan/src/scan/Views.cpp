@@ -30,11 +30,36 @@ float* View::GetBuffer(const unsigned int& index)
 	return m_Data.at(index).buffer;
 }
 
+bool View::TraverseUp()
+{
+	if (m_CurrentDepth == 0)
+	{
+		return false;
+	}
+
+	--m_CurrentDepth;
+
+	return true;
+}
+
+bool View::TraverseDown()
+{
+	if (m_CurrentDepth == m_Depth - 1)
+	{
+		return false;
+	}
+
+	++m_CurrentDepth;
+
+	return true;
+}
+
 void View::InitializeView(unsigned int vectorSize, unsigned int bufferHeight, unsigned int bufferWidth)
 {
 	m_Depth = vectorSize;
 	m_Height = bufferHeight;
 	m_Width = bufferWidth;
+	m_CurrentDepth = vectorSize / 2;
 
 	m_Data.resize(vectorSize);       //Resize depth vector
 	for (int i = 0; i < vectorSize; i++)
