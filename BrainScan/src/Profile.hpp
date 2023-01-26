@@ -15,7 +15,7 @@ class Timer
 		~Timer();
 };
 
-#ifdef BS_DEBUG
+#ifndef BS_PROD
 	#define SCOPE_PROFILE(name) Timer t##__LINE__(name)
 	#define FUNC_PROFILE() Timer t##__func__(__func__)
 #else

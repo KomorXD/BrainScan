@@ -27,7 +27,7 @@ VertexBuffer::VertexBuffer(const void* data, uint32_t size)
 {
 	GLCall(glGenBuffers(1, &m_ID));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_ID));
-	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
@@ -66,7 +66,7 @@ void VertexBuffer::Unbind() const
 void VertexBuffer::UpdateBuffer(const void* data, uint32_t size)
 {
 	Bind();
-	GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
@@ -74,7 +74,7 @@ IndexBuffer::IndexBuffer(const uint32_t* data, uint32_t count)
 {
 	GLCall(glGenBuffers(1, &m_ID));
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ID));
-	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW));
 }
 
 IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
@@ -110,6 +110,13 @@ void IndexBuffer::Bind() const
 void IndexBuffer::Unbind() const
 {
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+}
+
+void IndexBuffer::UpdateBuffer(const uint32_t* data, uint32_t count)
+{
+	Bind();
+	m_Count = count;
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_DYNAMIC_DRAW));
 }
 
 uint32_t VertexBufferElement::GetSizeOfType(uint32_t t)
@@ -188,9 +195,15 @@ void VertexArray::Unbind() const
 }
 
 Shader::Shader(const std::string& vs, const std::string& fs)
-	: m_ID(0)
+	: m_VertexShaderPath(vs), m_FragmentShaderPath(fs), m_ID(0)
 {
 	m_ID = ShaderCreate(ShaderParse(vs), ShaderParse(fs));
+}
+
+Shader::Shader(const std::string& vs, const std::string& gs, const std::string& fs)
+	: m_VertexShaderPath(vs), m_GeometryShaderPath(gs), m_FragmentShaderPath(fs), m_ID(0)
+{
+	m_ID = ShaderCreate(ShaderParse(vs), ShaderParse(gs), ShaderParse(fs));
 }
 
 Shader::~Shader()
@@ -208,9 +221,29 @@ void Shader::Unbind() const
 	GLCall(glUseProgram(0));
 }
 
-void Shader::SetUniformInt32(const std::string& name, int32_t val)
+void Shader::SetUniform1i(const std::string& name, int32_t val)
 {
 	GLCall(glUniform1i(GetUniformLocation(name), val));
+}
+
+void Shader::SetUniform1f(const std::string& name, float val)
+{
+	GLCall(glUniform1f(GetUniformLocation(name), val));
+}
+
+void Shader::ReloadShader()
+{
+	Unbind();
+	GLCall(glDeleteProgram(m_ID));
+
+	if (m_GeometryShaderPath.empty())
+	{
+		m_ID = ShaderCreate(ShaderParse(m_VertexShaderPath), ShaderParse(m_FragmentShaderPath));
+
+		return;
+	}
+
+	m_ID = ShaderCreate(ShaderParse(m_VertexShaderPath), ShaderParse(m_GeometryShaderPath), ShaderParse(m_FragmentShaderPath));
 }
 
 std::string Shader::ShaderParse(const std::string& filepath)
@@ -286,15 +319,15 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& fs)
 	{
 		int len = 0;
 
-		GLCall(glGetShaderiv(program, GL_INFO_LOG_LENGTH, &len));
+		GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len));
 
 		char* message = (char*)_malloca(len * sizeof(char));
 
-		GLCall(glGetShaderInfoLog(program, len, &len, message));
+		GLCall(glGetProgramInfoLog(program, len, &len, message));
 
-		std::cout << "[ERROR] Failed to link shaders:\n" << message << ".\n";
+		std::cout << "[ERROR] Failed to link shaders: " << message << ".\n";
 
-		GLCall(glDeleteShader(program));
+		GLCall(glDeleteProgram(program));
 
 		return 0;
 	}
@@ -305,9 +338,50 @@ uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& fs)
 	return program;
 }
 
+uint32_t Shader::ShaderCreate(const std::string& vs, const std::string& gs, const std::string& fs)
+{
+	GLCall(uint32_t program = glCreateProgram());
+	uint32_t vsID = ShaderCompile(GL_VERTEX_SHADER, vs);
+	uint32_t gsID = ShaderCompile(GL_GEOMETRY_SHADER, gs);
+	uint32_t fsID = ShaderCompile(GL_FRAGMENT_SHADER, fs);
+
+	GLCall(glAttachShader(program, vsID));
+	GLCall(glAttachShader(program, gsID));
+	GLCall(glAttachShader(program, fsID));
+	GLCall(glLinkProgram(program));
+	GLCall(glValidateProgram(program));
+
+	int success = 0;
+
+	GLCall(glGetProgramiv(program, GL_LINK_STATUS, &success));
+
+	if (success == GL_FALSE)
+	{
+		int len = 0;
+
+		GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len));
+		
+		char* message = (char*)_malloca(len * sizeof(char));
+
+		GLCall(glGetProgramInfoLog(program, len, &len, message));
+
+		std::cout << "[ERROR] Failed to link shaders: " << message << ".\n";
+
+		GLCall(glDeleteProgram(program));
+
+		return 0;
+	}
+
+	GLCall(glDeleteShader(vsID));
+	GLCall(glDeleteShader(gsID));
+	GLCall(glDeleteShader(fsID));
+
+	return program;
+}
+
 int32_t Shader::GetUniformLocation(const std::string& name)
 {
-	if(m_UniformLocations.find(name) != m_UniformLocations.end())
+	if(m_UniformLocations.contains(name))
 		return m_UniformLocations[name];
 
 	GLCall(int32_t location = glGetUniformLocation(m_ID, name.c_str()));
@@ -365,7 +439,8 @@ Texture::Texture(float* data, uint32_t width, uint32_t height)
 
 Texture::~Texture()
 {
-	GLCall(glDeleteTextures(1, &m_RendererID));
+	if(m_RendererID != 0)
+		GLCall(glDeleteTextures(1, &m_RendererID));
 }
 
 void Texture::Bind(unsigned int slot) const

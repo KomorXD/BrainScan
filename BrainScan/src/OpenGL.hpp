@@ -8,9 +8,13 @@
 
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #define ASSERT(x) if(!(x)) __debugbreak()
+#ifdef BS_DEBUG
 #define GLCall(f) GLClearErrors();\
 	f;\
 	ASSERT(GLCheckForError(#f, __FILENAME__, __LINE__))
+#else
+#define GLCall(f) f
+#endif
 
 void GLClearErrors();
 
@@ -49,6 +53,8 @@ class IndexBuffer
 
 		void Bind() const;
 		void Unbind() const;
+
+		void UpdateBuffer(const uint32_t* data, uint32_t count);
 
 		inline const uint32_t GetCount() const { return m_Count; }
 
@@ -129,20 +135,29 @@ class Shader
 {
 	public:
 		Shader(const std::string& vs, const std::string& fs);
+		Shader(const std::string& vs, const std::string& gs, const std::string& fs);
 		~Shader();
 
 		void Bind() const;
 		void Unbind() const;
 
-		void SetUniformInt32(const std::string& name, int32_t val);
+		void SetUniform1i(const std::string& name, int32_t val);
+		void SetUniform1f(const std::string& name, float val);
+
+		void ReloadShader();
 
 	private:
+		std::string m_VertexShaderPath;
+		std::string m_FragmentShaderPath;
+		std::string m_GeometryShaderPath;
+
 		uint32_t m_ID;
 		std::unordered_map<std::string, int32_t> m_UniformLocations;
 
 		std::string ShaderParse(const std::string& filepath);
 		uint32_t ShaderCompile(uint32_t type, const std::string& sourceCode);
 		uint32_t ShaderCreate(const std::string& vs, const std::string& fs);
+		uint32_t ShaderCreate(const std::string& vs, const std::string& gs, const std::string& fs);
 
 		int32_t GetUniformLocation(const std::string& name);
 };

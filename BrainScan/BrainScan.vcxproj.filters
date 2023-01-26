@@ -105,6 +105,12 @@
     <ClCompile Include="src\scan\Views.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui\UIBrushSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scan\Layer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vendor\glad\glad.h">
@@ -1085,6 +1091,15 @@
     <ClInclude Include="src\scan\Views.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ui\UIPanels.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\UIBrushSettings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scan\Layer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -1509,5 +1524,8 @@
     </None>
     <None Include="res\shaders\TextureShader.vert" />
     <None Include="res\shaders\TextureShader.frag" />
+    <None Include="res\shaders\PathsShader.vert" />
+    <None Include="res\shaders\PathsShader.frag" />
+    <None Include="res\shaders\PathsShader.geom" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 #include "OpenGL.hpp"
 #include "scenes/EmptyScene.hpp"
+#include "scenes/AdvancedScene.hpp"
 
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -27,6 +28,7 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	m_Window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(), nullptr, nullptr);
 
@@ -40,7 +42,7 @@ App::App(int32_t windowWidth, int32_t windowHeight, const std::string& title)
 	}
 
 	glfwMakeContextCurrent(m_Window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -96,6 +98,11 @@ void App::Run()
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 		
+		if (m_NextScene)
+		{
+			m_CurrentScene = std::move(m_NextScene);
+		}
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 
@@ -117,6 +124,16 @@ void App::Run()
 
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
+}
+
+void App::SetNextScene(std::unique_ptr<IScene>&& newScene)
+{
+	m_NextScene = std::move(newScene);
+}
+
+void App::SetWindowShouldClose(bool status)
+{
+	glfwSetWindowShouldClose(m_Window, status);
 }
 
 App& App::GetInstance()
