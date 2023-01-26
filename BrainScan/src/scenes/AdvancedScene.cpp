@@ -38,7 +38,7 @@ AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan)
 
 	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
 
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 8; ++i)
 	{
 		m_ToolBar->AddButton([i]()
 			{
