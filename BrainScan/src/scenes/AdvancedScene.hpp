@@ -35,4 +35,7 @@ class AdvancedScene : public IScene
 		virtual void Update() override;
 		virtual void Render() override;
 		virtual void SetTool() override;
+
+	private:
+		void OnScroll(double offset);
 };

@@ -4,9 +4,19 @@
 #include "../App.hpp"
 #include "../tools/ToolBrush.hpp"
 
+#include <GLFW/glfw3.h>
+
 AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 {
 	FUNC_PROFILE();
+
+	glfwSetWindowUserPointer(App::GetInstance().GetWindow(), this);
+	glfwSetScrollCallback(App::GetInstance().GetWindow(), [](GLFWwindow* window, double xOffset, double yOffset)
+		{
+			AdvancedScene* thisScene = (AdvancedScene*)glfwGetWindowUserPointer(window);
+
+			thisScene->OnScroll(yOffset);
+		});
 
 	m_Scan.LoadFromFile(inputImageFileName);
 
@@ -86,7 +96,7 @@ PathsPack AdvancedScene::RequestPathsPack()
 
 void AdvancedScene::Input()
 {
-	// TODO: handle user input
+	
 }
 
 void AdvancedScene::Update()
@@ -109,4 +119,17 @@ void AdvancedScene::Render()
 void AdvancedScene::SetTool()
 {
 	// TODO: implement xd
+}
+
+void AdvancedScene::OnScroll(double offset)
+{
+	ImGui::GetIO().AddMouseWheelEvent(0.0f, (float)offset);
+
+	for (auto& scanWindow : m_ScanWindows)
+	{
+		if (scanWindow.TryToHandleScroll(offset))
+		{
+			break;
+		}
+	}
 }
