@@ -119,9 +119,9 @@ static void FindMinMaxAtDepth(sitk::Image* image, View* axial, unsigned int dept
 {
 	std::vector<unsigned int> pixelIndex;
 	int pixelValue = 0;
-	for (int h = 0; h < axial->GetHeight(); h++)
+	for (unsigned int h = 0; h < axial->GetHeight(); h++)
 	{
-		for (int w = 0; w < axial->GetWidth(); w++)
+		for (unsigned int w = 0; w < axial->GetWidth(); w++)
 		{
 			pixelIndex = { { static_cast<unsigned int>(w),
 								static_cast<unsigned int>(h),
@@ -147,7 +147,7 @@ void Scan::FindMinMax(View& view)
 	FUNC_PROFILE();
 	std::vector<std::future<void>> futures;
 	futures.reserve(m_Views.axial.GetDepth());
-	for (int d = 0; d < view.GetDepth(); d++)
+	for (unsigned int d = 0; d < view.GetDepth(); d++)
 	{
 		futures.push_back(std::async(std::launch::async, FindMinMaxAtDepth, &m_Image, &m_Views.axial, d));
 	}
@@ -163,9 +163,9 @@ static void SetPixelAtDepth(sitk::Image* image, View* axial, unsigned int depth)
 	std::vector<unsigned int> pixelIndex;
 	unsigned int rowLength = axial->GetWidth();
 
-	for (int h = 0; h < axial->GetHeight(); h++)
+	for (unsigned int h = 0; h < axial->GetHeight(); h++)
 	{
-		for (int w = 0; w < axial->GetWidth(); w++)
+		for (unsigned int w = 0; w < axial->GetWidth(); w++)
 		{
 			pixelIndex = { { static_cast<unsigned int>(w),
 							 static_cast<unsigned int>(h),
@@ -184,7 +184,7 @@ void Scan::PopulateAxialView()
 	std::vector<std::future<void>> futures;	
 	futures.reserve(m_Views.axial.GetDepth());
 
-	for (int d = 0; d < m_Views.axial.GetDepth(); d++)
+	for (unsigned int d = 0; d < m_Views.axial.GetDepth(); d++)
 	{
 		futures.push_back(std::async(std::launch::async, SetPixelAtDepth, &m_Image, &m_Views.axial, d));
 	}
@@ -195,11 +195,11 @@ void Scan::CreateSagittalViewBasedOnAxialView()
 	FUNC_PROFILE();
 	unsigned int axialRowLength = m_Views.axial.GetWidth();
 
-	for (int w = 0; w < m_Views.axial.GetWidth(); w++)
+	for (unsigned int w = 0; w < m_Views.axial.GetWidth(); w++)
 	{	
-		for (int d = 0; d < m_Views.axial.GetDepth(); d++)
+		for (unsigned int d = 0; d < m_Views.axial.GetDepth(); d++)
 		{		
-			for (int h = 0; h < m_Views.axial.GetHeight(); h++)
+			for (unsigned int h = 0; h < m_Views.axial.GetHeight(); h++)
 			{
 				float value = m_Views.axial.GetBuffer(d)[w + (axialRowLength * h)];
 				m_Views.sagittal.GetBuffer(w)[h + (m_Views.sagittal.GetWidth() * d)] = value;
@@ -212,11 +212,11 @@ void Scan::CreateCoronalViewBasedOnAxialView()
 {
 	FUNC_PROFILE();
 	unsigned int axialRowLength = m_Views.axial.GetWidth();
-	for (int h = 0; h < m_Views.axial.GetHeight(); h++)
+	for (unsigned int h = 0; h < m_Views.axial.GetHeight(); h++)
 	{
-		for (int d = 0; d < m_Views.axial.GetDepth(); d++)
+		for (unsigned int d = 0; d < m_Views.axial.GetDepth(); d++)
 		{
-			for (int w = 0; w < m_Views.axial.GetWidth(); w++)
+			for (unsigned int w = 0; w < m_Views.axial.GetWidth(); w++)
 			{
 				float value = m_Views.axial.GetBuffer(d)[w + (axialRowLength * h)];
 				m_Views.coronal.GetBuffer(h)[w + (m_Views.coronal.GetWidth() * d)] = value;
