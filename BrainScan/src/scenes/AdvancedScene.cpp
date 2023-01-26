@@ -30,8 +30,6 @@ AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan)
 
 	m_MenuBar->PushMenu("Options");
 	m_MenuBar->PushMenuItem("Reload shaders", "", [this]() { m_Shader->ReloadShader(); Path::s_PathsShader->ReloadShader(); });
-	m_MenuBar->PushMenuItem("Fill", "Ctrl + 3", []() { GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)); });
-	m_MenuBar->PushMenuItem("Line", "Ctrl + 3", []() { GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)); });
 
 	m_MenuBar->PushMenu("Help");
 	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("Help/Info."); });
