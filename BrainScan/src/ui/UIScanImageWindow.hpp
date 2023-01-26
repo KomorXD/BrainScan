@@ -22,8 +22,8 @@ class UIScanImageWindow : public IUIPanel
 		std::shared_ptr<Shader> m_Shader;
 		
 		View* m_View = nullptr;
-		int32_t m_Depth = 0;
 
+		bool m_IsHovered	 = false;
 		bool m_IsDraggedOver = false;
 
 	public:
@@ -36,7 +36,10 @@ class UIScanImageWindow : public IUIPanel
 		void SetShader(std::shared_ptr<Shader>& shader);
 		void SetImageRatio(float ratio);
 		void SetView(View* view);
-		inline std::vector<Path>* GetBrushPaths() { return m_View ? &m_View->GetData().at(m_Depth).paths : nullptr; }
+
+		bool TryToHandleScroll(double offset);
+
+		inline std::vector<Path>* GetBrushPaths() { return m_View ? &m_View->GetCurrentDepthData().paths : nullptr; }
 
 		virtual void Render() override;
 

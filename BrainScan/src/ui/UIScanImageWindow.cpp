@@ -44,8 +44,24 @@ void UIScanImageWindow::SetView(View* view)
 	}
 
 	m_View = view;
-	m_Depth = view->GetDepth() / 2;
-	m_ScanTexture = std::make_shared<Texture>(view->GetData()[m_Depth].buffer, view->GetWidth(), view->GetHeight());
+	m_ScanTexture = std::make_shared<Texture>(m_View->GetCurrentDepthData().buffer, m_View->GetWidth(), m_View->GetHeight());
+}
+
+bool UIScanImageWindow::TryToHandleScroll(double offset)
+{
+	if (!m_IsHovered)
+	{
+		return false;
+	}
+
+	bool depthChanged = offset < 0.0 ? m_View->TraverseDown() : m_View->TraverseUp();
+
+	if (depthChanged)
+	{
+		m_ScanTexture = std::make_shared<Texture>(m_View->GetCurrentDepthData().buffer, m_View->GetWidth(), m_View->GetHeight());
+	}
+
+	return true;
 }
 
 void UIScanImageWindow::Render()
@@ -53,7 +69,7 @@ void UIScanImageWindow::Render()
 	ImGui::SetNextWindowSize(ImVec2(m_Width, m_Height));
 	ImGui::SetNextWindowPos(ImVec2(m_PosX, m_PosY));
 
-	ImGui::Begin(std::format("{} plane", m_Label).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+	ImGui::Begin(std::format("{} plane - Layer #{}", m_Label, m_View ? m_View->GetCurrentDepth() : 0).c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
 	Update();
 
@@ -113,8 +129,10 @@ static float dist(const ImVec2& first, const ImVec2& second)
 
 void UIScanImageWindow::CheckForDrawing()
 {
+	m_IsHovered = ImGui::IsWindowHovered();
+
 	bool isDraggedNow = ImGui::IsWindowHovered() && ImGui::GetIO().MouseDown[0];
-	std::vector<Path>& paths = m_View->GetData().at(m_Depth).paths;
+	std::vector<Path>& paths = m_View->GetCurrentDepthData().paths;
 
 	if (!m_IsDraggedOver && isDraggedNow)
 	{
@@ -202,7 +220,7 @@ void UIScanImageWindow::RenderScanAndBrushes()
 	GLCall(glDrawElements(GL_TRIANGLES, UIScanImageWindow::s_ScanIBO->GetCount(), GL_UNSIGNED_INT, nullptr));
 
 	size_t pointsCount = 0;
-	const std::vector<Path>& paths = m_View->GetData().at(m_Depth).paths;
+	const std::vector<Path>& paths = m_View->GetCurrentDepthData().paths;
 
 	for (const auto& path : paths)
 	{
