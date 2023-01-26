@@ -18,7 +18,7 @@ class AdvancedScene : public IScene
 		std::vector<UIScanImageWindow> m_ScanWindows;
 
 		std::unique_ptr<ITool> m_CurrentTool;
-		Scan m_Scan;
+		std::unique_ptr <Scan> m_Scan;
 
 		std::shared_ptr<Texture> m_AxialTexture;
 		std::shared_ptr<Texture> m_CoronalTexture;
@@ -26,7 +26,7 @@ class AdvancedScene : public IScene
 		std::shared_ptr<Shader>	m_Shader;
 
 	public:
-		AdvancedScene(const std::string& inputImageFileName);
+		AdvancedScene(std::unique_ptr<Scan>&& scan);
 		virtual ~AdvancedScene() = default;
 
 		virtual PathsPack RequestPathsPack() override;

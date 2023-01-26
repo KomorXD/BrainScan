@@ -13,6 +13,7 @@ class EmptyScene : public IScene
 	private:
 		std::unique_ptr<UIMenuBar> m_MenuBar;
 		std::unique_ptr<UIToolBar> m_ToolBar;
+		std::unique_ptr<Scan> m_Scan;
 
 	public:
 		EmptyScene();

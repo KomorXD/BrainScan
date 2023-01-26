@@ -12,59 +12,48 @@
 #include "../ui/UIScanImageWindow.hpp"
 
 
+static bool s_ShouldShowModal = false;
+static std::string s_InputImageFileName;
+
 EmptyScene::EmptyScene()
 {
 	FUNC_PROFILE();
 
 	m_MenuBar = std::make_unique<UIMenuBar>();
+	m_Scan = std::make_unique<Scan>();
 
+	//File menu
 	m_MenuBar->PushMenu("File");
 	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() 
 		{ 
-			ImGuiFileDialog::Instance()->OpenDialog("ChooseScan1", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+			ImGuiFileDialog::Instance()->OpenDialog("ChooseScan", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
 		});
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
 	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
 
+	//Help menu
 	m_MenuBar->PushMenu("Help");
-	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("jest sroda moje ziomki"); });
-
-	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
-
-	m_ToolBar->AddButton([]()
-	{
-		//After clicking the open button, a modal with file system appears
-		ImGuiFileDialog::Instance()->OpenDialog("ChooseScan1", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
-		
-		LOG_INFO("Button #{} pressed.", 1);
-	});
+	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("Help/Info pressed."); });
 }
-
-void EmptyScene::Input()
-{
-	// TODO: handle user input
-}
-
-void EmptyScene::Update()
-{
-	// TODO: idk actually
-}
-
-static bool s_ShouldShowModal = false;
-static std::string s_InputImageFileName;
 
 void EmptyScene::Render()
 {
 	m_MenuBar->Render();
-	m_ToolBar->Render();
 
-	if (ImGuiFileDialog::Instance()->Display("ChooseScan1", 32, ImVec2(600.0f, 400.0f)))
+	if (ImGuiFileDialog::Instance()->Display("ChooseScan", 32, ImVec2(600.0f, 400.0f)))
 	{
 
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
 			s_InputImageFileName = ImGuiFileDialog::Instance()->GetFilePathName();
-			s_ShouldShowModal = true;
+			if (m_Scan->LoadFromFile(s_InputImageFileName))
+			{
+				s_ShouldShowModal = true;
+			}
+			else
+			{
+				s_ShouldShowModal = false;
+			}
 		}
 
 		ImGuiFileDialog::Instance()->Close();
@@ -92,16 +81,22 @@ void EmptyScene::Render()
 			{
 				ImGui::CloseCurrentPopup();
 				s_ShouldShowModal = false;
-				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>(s_InputImageFileName));
+				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>(std::move(m_Scan)));
 			}
 
 			ImGui::EndPopup();
 		}
 	}
-
 }
 
 void EmptyScene::SetTool()
 {
-	// TODO: implement xd
+}
+
+void EmptyScene::Input()
+{
+}
+
+void EmptyScene::Update()
+{
 }

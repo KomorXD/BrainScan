@@ -6,7 +6,7 @@
 
 #include <GLFW/glfw3.h>
 
-AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
+AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan)
 {
 	FUNC_PROFILE();
 
@@ -18,7 +18,7 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 			thisScene->OnScroll(yOffset);
 		});
 
-	m_Scan.LoadFromFile(inputImageFileName);
+	m_Scan = std::move(scan);
 
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
 
@@ -53,9 +53,9 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 	m_CurrentTool = std::make_unique<ToolBrush>(this);
 	m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 
-	View* axial	   = m_Scan.GetAxial();
-	View* coronal  = m_Scan.GetCoronal();
-	View* sagittal = m_Scan.GetSagittal();
+	View* axial	   = m_Scan->GetAxial();
+	View* coronal  = m_Scan->GetCoronal();
+	View* sagittal = m_Scan->GetSagittal();
 
 	float scanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
 
