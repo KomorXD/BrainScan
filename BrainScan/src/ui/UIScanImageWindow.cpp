@@ -128,6 +128,11 @@ void UIScanImageWindow::CheckForDrawing()
 	else if (m_IsDraggedOver && !isDraggedNow)
 	{
 		m_IsDraggedOver = false;
+
+		if (paths.back().points.size() < 2)
+		{
+			paths.back().points.pop_back();
+		}
 	}
 
 	if (ImGui::IsWindowHovered() && m_IsDraggedOver)
@@ -184,7 +189,7 @@ void UIScanImageWindow::RenderScanAndBrushes()
 
 	for (const auto& path : paths)
 	{
-		if (!path.shoudlDraw)
+		if (!path.shoudlDraw || path.points.size() < 2)
 		{
 			continue;
 		}
