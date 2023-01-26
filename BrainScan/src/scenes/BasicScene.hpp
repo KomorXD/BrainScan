@@ -16,7 +16,7 @@ class BasicScene : public IScene
 
 		std::vector<UIScanImageWindow>  m_ScanWindows;
 
-		Scan m_Scan;
+		std::unique_ptr <Scan> m_Scan;
 
 		std::shared_ptr<Texture>	m_AxialTexture;
 		std::shared_ptr<Texture>	m_CoronalTexture;
@@ -24,7 +24,7 @@ class BasicScene : public IScene
 		std::shared_ptr<Shader>		m_Shader;
 
 	public:
-		BasicScene(const std::string& inputImageFileName);
+		BasicScene(std::unique_ptr<Scan>&& scan);
 		virtual ~BasicScene() = default;
 
 		virtual PathsPack RequestPathsPack() override;

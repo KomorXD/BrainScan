@@ -7,8 +7,7 @@ BasicScene::BasicScene(const std::string& inputImageFileName)
 {
 	FUNC_PROFILE();
 
-	m_Scan.LoadFromFile(inputImageFileName);
-
+	m_Scan = std::move(scan);
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
 	//m_AxialTexture = std::make_shared<Texture>(m_Scan.GetAxial()->GetData()[40], m_Scan.GetAxial()->GetWidth(), m_Scan.GetAxial()->GetHeight());
 	//m_CoronalTexture = std::make_shared<Texture>(m_Scan.GetCoronal()->GetData()[40], m_Scan.GetCoronal()->GetWidth(), m_Scan.GetCoronal()->GetHeight());
@@ -42,9 +41,9 @@ BasicScene::BasicScene(const std::string& inputImageFileName)
 
 	m_ToolSettings = std::make_unique<UIBrushSettings>(this, m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 
-	View* axial = m_Scan.GetAxial();
-	View* coronal = m_Scan.GetCoronal();
-	View* sagittal = m_Scan.GetSagittal();
+	View* axial = m_Scan->GetAxial();
+	View* coronal = m_Scan->GetCoronal();
+	View* sagittal = m_Scan->GetSagittal();
 
 	float scanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
 
