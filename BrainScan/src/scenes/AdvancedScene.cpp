@@ -24,6 +24,8 @@ AdvancedScene::AdvancedScene(const std::string& inputImageFileName)
 	m_MenuBar->PushMenuItem("nwm1", "Ctrl + 1", []() { LOG_INFO("Options/nwm1 pressed."); });
 	m_MenuBar->PushMenuItem("nwm2", "Ctrl + 2", []() { LOG_INFO("Options/nwm2 pressed."); });
 	m_MenuBar->PushMenuItem("nwm3", "Ctrl + 3", []() { LOG_INFO("Options/nwm3 pressed."); });
+	m_MenuBar->PushMenuItem("Fill", "Ctrl + 3", []() { GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)); });
+	m_MenuBar->PushMenuItem("Line", "Ctrl + 3", []() { GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)); });
 
 	m_MenuBar->PushMenu("Help");
 	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("jest sroda moje ziomki"); });
