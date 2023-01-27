@@ -25,38 +25,34 @@ void IScanScene::CreateUIElements()
 	m_MenuBar = std::make_unique<UIMenuBar>();
 	m_ToolBar = std::make_unique<UIToolBar>(m_MenuBar->GetPosX(), m_MenuBar->GetPosY() + m_MenuBar->GetHeight());
 	m_ToolSettings = std::make_unique<UIBrushSettings>(this, m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
-	m_ScanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
 }
 
 void IScanScene::CreateImageTexture(std::unique_ptr<Scan>&& scan)
 {
 	m_Shader = std::make_shared<Shader>("res/shaders/TextureShader.vert", "res/shaders/TextureShader.frag");
 	m_Scan = std::move(scan);
-	m_ScanWindows.reserve(4);
 
-	View* axial = m_Scan->GetAxial();
-	View* coronal = m_Scan->GetCoronal();
-	View* sagittal = m_Scan->GetSagittal();
+	float scanPanelHeight = m_ToolSettings->GetHeight() / 2.0f;
 
-	m_ScanWindows.emplace_back("Axial", m_ToolSettings->GetPosX() + m_ToolSettings->GetWidth(), m_ToolSettings->GetPosY(), m_ScanPanelHeight);
-	m_ScanWindows.back().SetView(axial);
-	m_ScanWindows.back().SetShader(m_Shader);
+	m_AxialWindow = std::make_unique<UIScanImageWindow>("Axial", m_ToolSettings->GetPosX() + m_ToolSettings->GetWidth(), m_ToolSettings->GetPosY(), scanPanelHeight);
+	m_AxialWindow->SetView(m_Scan->GetAxial());
+	m_AxialWindow->SetShader(m_Shader);
 
-	m_ScanWindows.emplace_back("Coronal", m_ScanWindows.back().GetPosX() + m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY(), m_ScanPanelHeight);
-	m_ScanWindows.back().SetView(coronal);
-	m_ScanWindows.back().SetShader(m_Shader);
+	m_CoronalWindow = std::make_unique<UIScanImageWindow>("Coronal", m_AxialWindow->GetPosX() + m_AxialWindow->GetWidth(), m_AxialWindow->GetPosY(), scanPanelHeight);
+	m_CoronalWindow->SetView(m_Scan->GetCoronal());
+	m_CoronalWindow->SetShader(m_Shader);
 
-	m_ScanWindows.emplace_back("Sagittal", m_ScanWindows.back().GetPosX() - m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY() + m_ScanWindows.back().GetHeight(), m_ScanPanelHeight);
-	m_ScanWindows.back().SetView(sagittal);
-	m_ScanWindows.back().SetShader(m_Shader);
+	m_SagittalWindow = std::make_unique<UIScanImageWindow>("Sagittal", m_CoronalWindow->GetPosX() - m_CoronalWindow->GetWidth(), m_CoronalWindow->GetPosY() + m_CoronalWindow->GetHeight(), scanPanelHeight);
+	m_SagittalWindow->SetView(m_Scan->GetSagittal());
+	m_SagittalWindow->SetShader(m_Shader);
 
-	m_ScanWindows.emplace_back("NULL", m_ScanWindows.back().GetPosX() + m_ScanWindows.back().GetWidth(), m_ScanWindows.back().GetPosY(), m_ScanPanelHeight);
-	m_ScanWindows.back().SetShader(m_Shader);
+	m_NullWindow = std::make_unique<UIScanImageWindow>("NULL", m_SagittalWindow->GetPosX() + m_SagittalWindow->GetWidth(), m_SagittalWindow->GetPosY(), scanPanelHeight);
+	m_NullWindow->SetShader(m_Shader);
 
 	GLCall(glEnable(GL_MULTISAMPLE));
 	GLCall(glLineWidth(10.0f));
 
-	UIScanImageWindow::InitializeBuffers((uint32_t)m_ScanWindows.back().GetWidth() * 3, (uint32_t)m_ScanWindows.back().GetHeight() * 2);
+	UIScanImageWindow::InitializeBuffers((uint32_t)m_AxialWindow->GetWidth() * 3, (uint32_t)m_AxialWindow->GetHeight() * 2);
 	Path::InitializeBuffers();
 }
 
@@ -64,9 +60,10 @@ void IScanScene::CreateImageTexture(std::unique_ptr<Scan>&& scan)
 PathsPack IScanScene::RequestPathsPack()
 {
 	PathsPack paths;
-	paths.axialPaths = m_ScanWindows[0].GetBrushPaths();
-	paths.coronalPaths = m_ScanWindows[1].GetBrushPaths();
-	paths.sagittalPaths = m_ScanWindows[2].GetBrushPaths();
+	
+	paths.axialPaths    = m_AxialWindow->GetBrushPaths();
+	paths.coronalPaths  = m_CoronalWindow->GetBrushPaths();
+	paths.sagittalPaths = m_SagittalWindow->GetBrushPaths();
 
 	return paths;
 }
@@ -76,22 +73,20 @@ void IScanScene::Render()
 	m_MenuBar->Render();
 	m_ToolBar->Render();
 	m_ToolSettings->Render();
-	for (auto& scanWindow : m_ScanWindows)
-	{
-		scanWindow.Render();
-	}
+
+	m_AxialWindow->Render();
+	m_CoronalWindow->Render();
+	m_SagittalWindow->Render();
+	m_NullWindow->Render();
 }
 
 void IScanScene::OnScroll(double offset)
 {
 	ImGui::GetIO().AddMouseWheelEvent(0.0f, (float)offset);
-	for (auto& scanWindow : m_ScanWindows)
-	{
-		if (scanWindow.TryToHandleScroll(offset))
-		{
-			break;
-		}
-	}
+
+	if (m_AxialWindow->TryToHandleScroll(offset))    return;
+	if (m_CoronalWindow->TryToHandleScroll(offset))  return;
+	if (m_SagittalWindow->TryToHandleScroll(offset)) return;
 }
 
 void IScanScene::Input()
@@ -100,6 +95,31 @@ void IScanScene::Input()
 
 void IScanScene::Update()
 {
+	if (!ImGui::GetIO().MouseDown[1])
+	{
+		return;
+	}
+
+	if (m_AxialWindow->IsHovered()) {
+		auto[x, y] = m_AxialWindow->GetNormalizedLastMousePos();
+
+		m_CoronalWindow->SetDepthFromNormalizedCoordinate(y);
+		m_SagittalWindow->SetDepthFromNormalizedCoordinate(x);
+	}
+
+	if (m_CoronalWindow->IsHovered()) {
+		auto [x, y] = m_CoronalWindow->GetNormalizedLastMousePos();
+
+		m_AxialWindow->SetDepthFromNormalizedCoordinate(y);
+		m_SagittalWindow->SetDepthFromNormalizedCoordinate(x);
+	}
+
+	if (m_SagittalWindow->IsHovered()) {
+		auto [x, y] = m_SagittalWindow->GetNormalizedLastMousePos();
+
+		m_CoronalWindow->SetDepthFromNormalizedCoordinate(x);
+		m_AxialWindow->SetDepthFromNormalizedCoordinate(y);
+	}
 }
 
 void IScanScene::SetTool()

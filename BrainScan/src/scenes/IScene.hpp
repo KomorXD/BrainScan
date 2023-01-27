@@ -26,17 +26,18 @@ class IScene
 class IScanScene : public IScene
 {
 	protected:
-		std::unique_ptr<UIToolSettings> m_ToolSettings;
-		std::vector<UIScanImageWindow>  m_ScanWindows;
+		std::unique_ptr<UIToolSettings>    m_ToolSettings;
+
+		std::unique_ptr<UIScanImageWindow> m_AxialWindow;
+		std::unique_ptr<UIScanImageWindow> m_CoronalWindow;
+		std::unique_ptr<UIScanImageWindow> m_SagittalWindow;
+		std::unique_ptr<UIScanImageWindow> m_NullWindow; // leave for now ig
 
 		std::unique_ptr<Scan>  m_Scan;
 		std::unique_ptr<ITool> m_CurrentTool;
 
 		std::shared_ptr<Shader>	m_Shader;
-
-	private:
-		float m_ScanPanelHeight = 0;
-
+		
 	public:
 		IScanScene(std::unique_ptr<Scan>&& scan);
 		virtual ~IScanScene() = default;
