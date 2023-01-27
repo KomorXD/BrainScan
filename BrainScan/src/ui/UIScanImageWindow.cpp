@@ -47,6 +47,17 @@ void UIScanImageWindow::SetView(View* view)
 	m_ScanTexture = std::make_shared<Texture>(m_View->GetCurrentDepthData().buffer, m_View->GetWidth(), m_View->GetHeight());
 }
 
+void UIScanImageWindow::SetDepthFromNormalizedCoordinate(float coord)
+{
+	uint32_t convertedCoord = (uint32_t)(coord * (float)m_View->GetDepth());
+
+	if (convertedCoord != m_View->GetCurrentDepth())
+	{
+		m_View->SetCurrentDepth(convertedCoord);
+		m_ScanTexture = std::make_shared<Texture>(m_View->GetCurrentDepthData().buffer, m_View->GetWidth(), m_View->GetHeight());
+	}
+}
+
 bool UIScanImageWindow::TryToHandleScroll(double offset)
 {
 	if (!m_IsHovered)
@@ -74,6 +85,16 @@ void UIScanImageWindow::Render()
 	Update();
 
 	ImGui::BeginChild(m_Label.c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
+
+	ImVec2 screenPos = ImGui::GetCursorScreenPos();
+	ImVec2 pos = ImGui::GetIO().MousePos;
+	ImVec2 translatedImagePos(pos.x - screenPos.x, pos.y - screenPos.y);
+
+	translatedImagePos.x = translatedImagePos.x / (m_Width - 32.0f);
+	translatedImagePos.y = translatedImagePos.y / (m_Height - ImGui::GetFontSize() * 1.7f);
+
+	m_NormalizedLastX = translatedImagePos.x;
+	m_NormalizedLastY = translatedImagePos.y;
 
 	if (s_DrawingEnabled && m_View)
 	{
@@ -148,17 +169,12 @@ void UIScanImageWindow::CheckForDrawing()
 
 	if (ImGui::IsWindowHovered() && m_IsDraggedOver)
 	{
-		ImVec2 screenPos = ImGui::GetCursorScreenPos();
-		ImVec2 pos = ImGui::GetIO().MousePos;
-		ImVec2 translatedImagePos(pos.x - screenPos.x, pos.y - screenPos.y);
 		Point newPoint;
+		ImVec2 lastTranslatedPos(m_NormalizedLastX, m_NormalizedLastY);
 
-		translatedImagePos.x = translatedImagePos.x / (m_Width - 32.0f);
-		translatedImagePos.y = translatedImagePos.y / (m_Height - ImGui::GetFontSize() * 1.7f);
-
-		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point.position, translatedImagePos) < 0.001f; }) == paths.back().points.end())
+		if (std::ranges::find_if(paths.back().points, [&](const Point& point) { return dist(point.position, lastTranslatedPos) < 0.001f; }) == paths.back().points.end())
 		{
-			newPoint.position = translatedImagePos;
+			newPoint.position = lastTranslatedPos;
 
 			newPoint.color.x = Path::s_Color[0];
 			newPoint.color.y = Path::s_Color[1];

@@ -14,6 +14,8 @@ class UIScanImageWindow : public IUIPanel
 	private:
 		static std::unique_ptr<VertexArray> s_ScanVAO;
 		static std::unique_ptr<IndexBuffer> s_ScanIBO;
+		
+		static std::unique_ptr<Shader> m_LinesShader;
 
 		std::string m_Label;
 		
@@ -26,6 +28,9 @@ class UIScanImageWindow : public IUIPanel
 		bool m_IsHovered	 = false;
 		bool m_IsDraggedOver = false;
 
+		float m_NormalizedLastX = 0.0f;
+		float m_NormalizedLastY = 0.0f;
+
 	public:
 		static bool s_DrawingEnabled;
 
@@ -36,9 +41,13 @@ class UIScanImageWindow : public IUIPanel
 		void SetShader(std::shared_ptr<Shader>& shader);
 		void SetImageRatio(float ratio);
 		void SetView(View* view);
+		void SetDepthFromNormalizedCoordinate(float coord);
 
 		bool TryToHandleScroll(double offset);
 
+		inline bool IsHovered() const { return m_IsHovered; }
+
+		inline ImVec2 GetNormalizedLastMousePos() const { return { m_NormalizedLastX, m_NormalizedLastY }; }
 		inline std::vector<Path>* GetBrushPaths() { return m_View ? &m_View->GetCurrentDepthData().paths : nullptr; }
 
 		virtual void Render() override;
