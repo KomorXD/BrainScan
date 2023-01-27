@@ -2,15 +2,15 @@
 
 #include "IUIPanel.hpp"
 
-class IScene;
+class IScanScene;
 
 class UIToolSettings : public IUIPanel
 {
 	protected:
-		IScene* m_ParentScene = nullptr;
+		IScanScene* m_ParentScene = nullptr;
 
 	public:
-		UIToolSettings(IScene* parentScene, float posX = 0.0f, float posY = 0.0f);
+		UIToolSettings(IScanScene* parentScene, float posX = 0.0f, float posY = 0.0f);
 		virtual ~UIToolSettings() = default;
 
 		virtual void Render() = 0;

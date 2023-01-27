@@ -16,7 +16,7 @@ class UIBrushSettings : public UIToolSettings
 		PathsPack m_Paths;
 
 	public:
-		UIBrushSettings(IScene* parentScene, float posX = 0.0f, float posY = 0.0f);
+		UIBrushSettings(IScanScene* parentScene, float posX = 0.0f, float posY = 0.0f);
 		virtual ~UIBrushSettings() = default;
 
 		virtual void Render() override;

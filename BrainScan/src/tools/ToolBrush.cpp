@@ -3,7 +3,7 @@
 
 bool UIScanImageWindow::s_DrawingEnabled;
 
-ToolBrush::ToolBrush(IScene* parentScene)
+ToolBrush::ToolBrush(IScanScene* parentScene)
 	: ITool(parentScene)
 {
 	UIScanImageWindow::s_DrawingEnabled = true;

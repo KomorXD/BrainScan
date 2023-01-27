@@ -1,26 +1,15 @@
 #pragma once
 
 #include "IScene.hpp"
-#include "../ui/UIPanels.hpp"
-#include "../OpenGL.hpp"
-#include "../scan/Scan.hpp"
-
-#include <vector>
-#include <memory>
 
 class EmptyScene : public IScene
 {
-	private:
-		std::unique_ptr<UIMenuBar> m_MenuBar;
-		std::unique_ptr<UIToolBar> m_ToolBar;
+private:
 		std::unique_ptr<Scan> m_Scan;
 
-	public:
+public:
 		EmptyScene();
 		virtual ~EmptyScene() = default;
-
-		virtual PathsPack RequestPathsPack() override { return {}; };
-
 		virtual void Input() override;
 		virtual void Update() override;
 		virtual void Render() override;

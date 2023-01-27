@@ -2,7 +2,7 @@
 #include "../Core.hpp"
 #include "../scenes/IScene.hpp"
 
-UIBrushSettings::UIBrushSettings(IScene* paretnScene, float posX, float posY)
+UIBrushSettings::UIBrushSettings(IScanScene* paretnScene, float posX, float posY)
 	: UIToolSettings(paretnScene, posX, posY)
 {
 	LOG_INFO("Initialized brush settings panel");

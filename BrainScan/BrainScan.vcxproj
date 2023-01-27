@@ -348,6 +348,7 @@
     <ClCompile Include="src\OpenGL.cpp" />
     <ClCompile Include="src\scenes\EmptyScene.cpp" />
     <ClCompile Include="src\Profile.cpp" />
+    <ClCompile Include="src\scenes\IScene.cpp" />
     <ClCompile Include="src\tools\ToolBrush.cpp" />
     <ClCompile Include="src\tools\ToolLasso.cpp" />
     <ClCompile Include="src\tools\ToolRuber.cpp" />

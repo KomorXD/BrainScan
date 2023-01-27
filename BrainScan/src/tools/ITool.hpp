@@ -6,10 +6,10 @@
 class ITool 
 {
 	protected:
-		IScene* m_ParentScene = nullptr;
+		IScanScene* m_ParentScene = nullptr;
 
 	public:
-		ITool(IScene* parentScene)
+		ITool(IScanScene* parentScene)
 			: m_ParentScene(parentScene) {}
 		
 		virtual ~ITool() = default;
