@@ -3,10 +3,11 @@
 #include "../ui/UIPanels.hpp"
 #include "../OpenGL.hpp"
 #include "../scan/Scan.hpp"
-#include "../tools/ITool.hpp"
 
 #include <vector>
 #include <memory>
+
+class ITool;
 
 class IScene
 {
@@ -28,11 +29,10 @@ class IScanScene : public IScene
 		std::unique_ptr<UIToolSettings> m_ToolSettings;
 		std::vector<UIScanImageWindow>  m_ScanWindows;
 
-		std::unique_ptr <Scan> m_Scan;
-		std::shared_ptr<Texture>	m_AxialTexture;
-		std::shared_ptr<Texture>	m_CoronalTexture;
-		std::shared_ptr<Texture>	m_SagittalTexture;
-		std::shared_ptr<Shader>		m_Shader;
+		std::unique_ptr<Scan>  m_Scan;
+		std::unique_ptr<ITool> m_CurrentTool;
+
+		std::shared_ptr<Shader>	m_Shader;
 
 	private:
 		float m_ScanPanelHeight = 0;
