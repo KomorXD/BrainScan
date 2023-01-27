@@ -11,7 +11,7 @@ private:
 	unsigned int m_Height = 0;
 	unsigned int m_Width = 0;
 
-	int32_t m_CurrentDepth = 0;
+	uint32_t m_CurrentDepth = 0;
 
 public:
 	void InitializeView(unsigned int vectorSize,unsigned int bufferHeight,unsigned int bufferWidth);
@@ -22,12 +22,14 @@ public:
 	bool TraverseUp();
 	bool TraverseDown();
 
+	void SetCurrentDepth(uint32_t depth);
+
 	inline std::vector<Layer>& GetData() { return m_Data; }
 	inline Layer& GetCurrentDepthData() { return m_Data[m_CurrentDepth]; }
 	inline unsigned int GetWidth() { return m_Width; }
 	inline unsigned int GetHeight() { return m_Height; }
 	inline unsigned int GetDepth() { return m_Depth; }
-	inline int32_t GetCurrentDepth() { return m_CurrentDepth; }
+	inline uint32_t GetCurrentDepth() { return m_CurrentDepth; }
 };
 
 class Views
