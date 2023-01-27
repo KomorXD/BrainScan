@@ -10,10 +10,4 @@ class AdvancedScene : public IScanScene
 	public:
 		AdvancedScene(std::unique_ptr<Scan>&& scan);
 		virtual ~AdvancedScene() = default;
-
-
-		virtual void Input() override;
-		virtual void Update() override;
-		virtual void SetTool() override;
-
 };

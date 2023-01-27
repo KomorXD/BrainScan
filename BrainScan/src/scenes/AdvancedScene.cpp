@@ -27,13 +27,3 @@ AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::mov
 
 	m_CurrentTool = std::make_unique<ToolBrush>(this);
 }
-
-void AdvancedScene::Input()
-{
-}
-void AdvancedScene::Update()
-{
-}
-void AdvancedScene::SetTool()
-{
-}

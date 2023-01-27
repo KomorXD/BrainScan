@@ -60,6 +60,18 @@ PathsPack IScanScene::RequestPathsPack()
 	return paths;
 }
 
+void IScanScene::Input()
+{
+}
+
+void IScanScene::Update()
+{
+}
+
+void IScanScene::SetTool()
+{
+}
+
 void IScanScene::Render()
 {
 	m_MenuBar->Render();

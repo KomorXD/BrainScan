@@ -39,9 +39,9 @@ public:
 	virtual ~IScanScene() = default;
 
 	PathsPack RequestPathsPack();
-	virtual void Input() = 0;
-	virtual void Update() = 0;
-	virtual void SetTool() = 0;
+	virtual void Input() override;
+	virtual void Update() override;
+	virtual void SetTool() override;
 
 protected:
 	virtual void Render() override;

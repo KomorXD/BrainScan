@@ -27,19 +27,3 @@ BasicScene::BasicScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::move(scan
 
 	m_CurrentTool = std::make_unique<ToolBrush>(this);
 }
-
-
-void BasicScene::SetTool()
-{
-
-}
-
-void BasicScene::Input()
-{
-
-}
-
-void BasicScene::Update()
-{
-
-}
