@@ -6,6 +6,13 @@
 
 AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::move(scan))
 {
+	PopulateMenu();
+	PopulateToolBar();
+	m_CurrentTool = std::make_unique<ToolBrush>(this);
+}
+
+void AdvancedScene::PopulateMenu()
+{
 	m_MenuBar->PushMenu("File");
 	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() { LOG_INFO("File/Open pressed."); });
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
@@ -16,14 +23,15 @@ AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::mov
 
 	m_MenuBar->PushMenu("Help");
 	m_MenuBar->PushMenuItem("Info", "Ctrl + I", []() { LOG_INFO("Help/Info."); });
+}
 
+void AdvancedScene::PopulateToolBar()
+{
 	for (int i = 0; i < 8; ++i)
 	{
 		m_ToolBar->AddButton([i]()
-			{
-				LOG_INFO("Button #{} pressed.", i + 1);
-			});
+		{
+			LOG_INFO("Button #{} pressed.", i + 1);
+		});
 	}
-
-	m_CurrentTool = std::make_unique<ToolBrush>(this);
 }
