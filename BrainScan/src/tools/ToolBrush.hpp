@@ -9,5 +9,6 @@ class ToolBrush : public ITool
 		virtual ~ToolBrush();
 
 		virtual std::unique_ptr<UIToolSettings> GetSettingsUI(float posX, float posY) override;
+		virtual void Update() override {}
 		virtual void UseTool() override;
 };

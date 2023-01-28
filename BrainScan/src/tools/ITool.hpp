@@ -15,5 +15,6 @@ class ITool
 		virtual ~ITool() = default;
 
 		virtual std::unique_ptr<UIToolSettings> GetSettingsUI(float posX, float posY) = 0;
+		virtual void Update() = 0;
 		virtual void UseTool() = 0;
 };
