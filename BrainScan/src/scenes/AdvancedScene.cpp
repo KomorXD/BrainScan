@@ -27,11 +27,30 @@ void AdvancedScene::PopulateMenu()
 
 void AdvancedScene::PopulateToolBar()
 {
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 5; i++)
 	{
 		m_ToolBar->AddButton([i]()
 		{
-			LOG_INFO("Button #{} pressed.", i + 1);
+			LOG_INFO("Button {} pressed", i + 1);
 		});
 	}
+
+	m_ToolBar->AddButton([this]()
+		{
+			m_Shader->Bind();
+			m_Shader->SetUniform1f("u_Flip", 0.0);
+			LOG_INFO("Radiological convention");
+		});
+
+	m_ToolBar->AddButton([this]()
+		{
+			m_Shader->Bind();
+			m_Shader->SetUniform1f("u_Flip", 1.0);
+			LOG_INFO("Neurological convention");
+		});
+
+	m_ToolBar->AddButton([]()
+		{
+			LOG_INFO("Button {} pressed", 8);
+		});
 }
