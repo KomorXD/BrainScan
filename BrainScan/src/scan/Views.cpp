@@ -54,6 +54,16 @@ bool View::TraverseDown()
 	return true;
 }
 
+void View::SetCurrentDepth(uint32_t depth)
+{
+	if (depth >= m_Depth)
+	{
+		return;
+	}
+
+	m_CurrentDepth = depth;
+}
+
 void View::InitializeView(unsigned int vectorSize, unsigned int bufferHeight, unsigned int bufferWidth)
 {
 	m_Depth = vectorSize;
