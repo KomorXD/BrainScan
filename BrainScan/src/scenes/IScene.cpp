@@ -95,6 +95,8 @@ void IScanScene::Input()
 
 void IScanScene::Update()
 {
+	m_CurrentTool->Update();
+
 	if (!ImGui::GetIO().MouseDown[1])
 	{
 		return;
