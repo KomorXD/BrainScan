@@ -103,7 +103,7 @@ void IScanScene::Update()
 	if (m_AxialWindow->IsHovered()) {
 		auto[x, y] = m_AxialWindow->GetNormalizedLastMousePos();
 
-		m_CoronalWindow->SetDepthFromNormalizedCoordinate(y);
+		m_CoronalWindow->SetDepthFromNormalizedCoordinate(1.0f - y);
 		m_SagittalWindow->SetDepthFromNormalizedCoordinate(x);
 	}
 
@@ -118,7 +118,7 @@ void IScanScene::Update()
 		auto [x, y] = m_SagittalWindow->GetNormalizedLastMousePos();
 
 		m_CoronalWindow->SetDepthFromNormalizedCoordinate(x);
-		m_AxialWindow->SetDepthFromNormalizedCoordinate(y);
+		m_AxialWindow->SetDepthFromNormalizedCoordinate(1.0f - y);
 	}
 }
 
