@@ -3,12 +3,15 @@
 #include "../Core.hpp"
 #include "../App.hpp"
 #include "../tools/ToolBrush.hpp"
+#include "../tools/ToolMask.hpp"
 
 AdvancedScene::AdvancedScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::move(scan))
 {
 	PopulateMenu();
 	PopulateToolBar();
+
 	m_CurrentTool = std::make_unique<ToolBrush>(this);
+	m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 }
 
 void AdvancedScene::PopulateMenu()
@@ -27,7 +30,27 @@ void AdvancedScene::PopulateMenu()
 
 void AdvancedScene::PopulateToolBar()
 {
-	for (int i = 0; i < 5; i++)
+	m_ToolBar->AddButton([this]()
+		{
+			m_CurrentTool = std::make_unique<ToolBrush>(this);
+			m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
+		}
+	);
+
+	m_ToolBar->AddButton([this]()
+		{
+			LOG_INFO("Eraser button pressed");
+		}
+	);
+
+	m_ToolBar->AddButton([this]()
+		{
+			m_CurrentTool = std::make_unique<ToolMask>(this, m_Shader);
+			m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
+		}
+	);
+
+	for (int i = 0; i < 2; i++)
 	{
 		m_ToolBar->AddButton([i]()
 		{
