@@ -351,10 +351,12 @@
     <ClCompile Include="src\scenes\IScene.cpp" />
     <ClCompile Include="src\tools\ToolBrush.cpp" />
     <ClCompile Include="src\tools\ToolLasso.cpp" />
+    <ClCompile Include="src\tools\ToolMask.cpp" />
     <ClCompile Include="src\tools\ToolRuber.cpp" />
     <ClCompile Include="src\tools\ToolRuler.cpp" />
     <ClCompile Include="src\ui\IUIPanel.cpp" />
     <ClCompile Include="src\ui\UIBrushSettings.cpp" />
+    <ClCompile Include="src\ui\UIMaskSettings.cpp" />
     <ClCompile Include="src\ui\UIScanImageWindow.cpp" />
     <ClCompile Include="src\ui\UIToolBar.cpp" />
     <ClCompile Include="src\ui\UIMenuBar.cpp" />
@@ -389,10 +391,12 @@
     <ClInclude Include="src\tools\ITool.hpp" />
     <ClInclude Include="src\tools\ToolBrush.hpp" />
     <ClInclude Include="src\tools\ToolLasso.hpp" />
+    <ClInclude Include="src\tools\ToolMask.hpp" />
     <ClInclude Include="src\tools\ToolRuber.hpp" />
     <ClInclude Include="src\tools\ToolRuler.hpp" />
     <ClInclude Include="src\ui\IUIPanel.hpp" />
     <ClInclude Include="src\ui\UIBrushSettings.hpp" />
+    <ClInclude Include="src\ui\UIMaskSettings.hpp" />
     <ClInclude Include="src\ui\UIPanels.hpp" />
     <ClInclude Include="src\ui\UIScanImageWindow.hpp" />
     <ClInclude Include="src\ui\UIToolBar.hpp" />
