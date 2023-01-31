@@ -1,11 +1,7 @@
 #include "IScene.hpp"
 #include <GLFW/glfw3.h>
-#include "imgui/ImGuiFileDialog.h"
 #include "../App.hpp"
 #include "../tools/ToolBrush.hpp"
-#include "BasicScene.hpp"
-#include "AdvancedScene.hpp"
-
 
 IScanScene::IScanScene(std::unique_ptr<Scan>&& scan)
 {
@@ -75,8 +71,6 @@ PathsPack IScanScene::RequestPathsPack()
 void IScanScene::Render()
 {
 	m_MenuBar->Render();
-
-
 	m_ToolBar->Render();
 	m_ToolSettings->Render();
 
@@ -132,63 +126,4 @@ void IScanScene::Update()
 
 void IScanScene::SetTool()
 {
-}
-
-IScene::IScene()
-{
-	m_Scan = std::make_unique<Scan>();
-}
-
-void IScene::ShowChooseFileDialog()
-{
-	if (ImGuiFileDialog::Instance()->Display("ChooseScan", 32, ImVec2(600.0f, 400.0f)))
-	{
-
-		if (ImGuiFileDialog::Instance()->IsOk())
-		{
-			m_InputImageFileName = ImGuiFileDialog::Instance()->GetFilePathName();
-			if (m_Scan->LoadFromFile(m_InputImageFileName))
-			{
-				m_ShouldShowModal = true;
-			}
-			else
-			{
-				m_ShouldShowModal = false;
-			}
-		}
-
-		ImGuiFileDialog::Instance()->Close();
-	}
-}
-
-void IScene::ShowChooseFileModeModal()
-{
-	if (m_ShouldShowModal)
-	{
-		ImGui::OpenPopup("Choose mode");
-
-		if (ImGui::BeginPopupModal("Choose mode", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			ImGui::Text("In what mode should the file be opened?\n\n");
-			ImGui::Separator();
-
-			if (ImGui::Button("User", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-				m_ShouldShowModal = false;
-				App::GetInstance().SetNextScene(std::make_unique<BasicScene>(std::move(m_Scan)));
-			}
-
-			ImGui::SameLine();
-
-			if (ImGui::Button("Admin", ImVec2(120, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-				m_ShouldShowModal = false;
-				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>(std::move(m_Scan)));
-			}
-
-			ImGui::EndPopup();
-		}
-	}
 }

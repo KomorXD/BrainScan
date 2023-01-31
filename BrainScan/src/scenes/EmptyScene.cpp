@@ -12,6 +12,9 @@
 #include "../ui/UIScanImageWindow.hpp"
 
 
+static bool s_ShouldShowModal = false;
+static std::string s_InputImageFileName;
+
 EmptyScene::EmptyScene()
 {
 	FUNC_PROFILE();
@@ -29,7 +32,7 @@ EmptyScene::EmptyScene()
 	m_MenuBar->PushMenuItem("Open sample data", "Ctrl + T", [&]()
 		{
 			m_Scan->CreateMockData();
-			m_ShouldShowModal = true;		
+			s_ShouldShowModal = true;		
 		});
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
 	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
@@ -43,8 +46,53 @@ void EmptyScene::Render()
 {
 	m_MenuBar->Render();
 
-	ShowChooseFileDialog();
-	ShowChooseFileModeModal();
+	if (ImGuiFileDialog::Instance()->Display("ChooseScan", 32, ImVec2(600.0f, 400.0f)))
+	{
+
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			s_InputImageFileName = ImGuiFileDialog::Instance()->GetFilePathName();
+			if (m_Scan->LoadFromFile(s_InputImageFileName))
+			{
+				s_ShouldShowModal = true;
+			}
+			else
+			{
+				s_ShouldShowModal = false;
+			}
+		}
+
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+	if (s_ShouldShowModal)
+	{
+		ImGui::OpenPopup("Choose mode");
+
+		if (ImGui::BeginPopupModal("Choose mode", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("In what mode should the file be opened?\n\n");
+			ImGui::Separator();
+
+			if (ImGui::Button("User", ImVec2(120, 0))) 
+			{
+				ImGui::CloseCurrentPopup();
+				s_ShouldShowModal = false;
+				App::GetInstance().SetNextScene(std::make_unique<BasicScene>(std::move(m_Scan)));
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Admin", ImVec2(120, 0))) 
+			{
+				ImGui::CloseCurrentPopup();
+				s_ShouldShowModal = false;
+				App::GetInstance().SetNextScene(std::make_unique<AdvancedScene>(std::move(m_Scan)));
+			}
+
+			ImGui::EndPopup();
+		}
+	}
 }
 
 void EmptyScene::SetTool()
