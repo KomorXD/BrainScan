@@ -1,5 +1,6 @@
 #include "BasicScene.hpp"
 #include "imgui/imgui.h"
+#include "imgui/ImGuiFileDialog.h"
 #include "../Core.hpp"
 #include "../App.hpp"
 #include "../tools/ToolBrush.hpp"
@@ -17,7 +18,10 @@ void BasicScene::PopulateMenu()
 {
 	//File menu
 	m_MenuBar->PushMenu("File");
-	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []() { LOG_INFO("File/Open pressed."); });
+	m_MenuBar->PushMenuItem("Open", "Ctrl + O", []()
+		{
+			ImGuiFileDialog::Instance()->OpenDialog("ChooseScan", "Open scan file", ".nii", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+		});
 	m_MenuBar->PushMenuItem("Save", "Ctrl + S", []() { LOG_INFO("File/Save pressed."); });
 	m_MenuBar->PushMenuItem("Exit", "Ctrl + Q", []() { App::GetInstance().SetWindowShouldClose(true); });
 

@@ -14,13 +14,21 @@ class IScene
 	protected:
 		std::unique_ptr<UIMenuBar> m_MenuBar;
 		std::unique_ptr<UIToolBar> m_ToolBar;
-
+		std::unique_ptr<Scan>      m_Scan;
+		bool m_ShouldShowModal = false;
+		std::string m_InputImageFileName;
 	public:
+		IScene();
 		virtual ~IScene() = default;		
 		virtual void Input()   = 0;
 		virtual void Update()  = 0;
 		virtual void Render()  = 0;
 		virtual void SetTool() = 0;
+		
+	protected:
+		void ShowChooseFileDialog();
+		void ShowChooseFileModeModal();
+
 };
 
 class IScanScene : public IScene
@@ -33,7 +41,6 @@ class IScanScene : public IScene
 		std::unique_ptr<UIScanImageWindow> m_SagittalWindow;
 		std::unique_ptr<UIScanImageWindow> m_NullWindow; // leave for now ig
 
-		std::unique_ptr<Scan>  m_Scan;
 		std::unique_ptr<ITool> m_CurrentTool;
 
 		std::shared_ptr<Shader>	m_Shader;
