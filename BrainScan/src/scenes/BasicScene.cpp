@@ -11,7 +11,9 @@ BasicScene::BasicScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::move(scan
 {
 	PopulateMenu();
 	PopulateToolBar();
-	m_CurrentTool = std::make_unique<ToolBrush>(this);
+
+	m_CurrentTool = std::make_unique<ToolMask>(this, m_Shader);
+	m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 }
 
 void BasicScene::PopulateMenu()

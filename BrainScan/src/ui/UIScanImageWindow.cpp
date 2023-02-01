@@ -7,6 +7,7 @@
 
 std::unique_ptr<VertexArray> UIScanImageWindow::s_ScanVAO;
 std::unique_ptr<IndexBuffer> UIScanImageWindow::s_ScanIBO;
+bool UIScanImageWindow::s_DrawingEnabled = false;
 
 UIScanImageWindow::UIScanImageWindow(const std::string& label, float posX, float posY, float height)
 	: IUIPanel(posX, posY), m_Label(label)
@@ -85,6 +86,8 @@ void UIScanImageWindow::Render()
 	Update();
 
 	ImGui::BeginChild(m_Label.c_str(), ImVec2(m_Width - 16.0f, m_Height - ImGui::GetFontSize() * 1.7f - 8.0f), true);
+	
+	m_IsHovered = ImGui::IsWindowHovered();
 
 	ImVec2 screenPos = ImGui::GetCursorScreenPos();
 	ImVec2 pos = ImGui::GetIO().MousePos;
@@ -150,8 +153,6 @@ static float dist(const ImVec2& first, const ImVec2& second)
 
 void UIScanImageWindow::CheckForDrawing()
 {
-	m_IsHovered = ImGui::IsWindowHovered();
-
 	bool isDraggedNow = ImGui::IsWindowHovered() && ImGui::GetIO().MouseDown[0];
 	std::vector<Path>& paths = m_View->GetCurrentDepthData().paths;
 

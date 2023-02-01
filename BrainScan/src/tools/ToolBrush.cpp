@@ -1,8 +1,6 @@
 #include "ToolBrush.hpp"
 #include "../ui/UIScanImageWindow.hpp"
 
-bool UIScanImageWindow::s_DrawingEnabled;
-
 ToolBrush::ToolBrush(IScanScene* parentScene)
 	: ITool(parentScene)
 {
