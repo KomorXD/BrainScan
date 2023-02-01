@@ -30,18 +30,6 @@ void AdvancedScene::PopulateMenu()
 
 void AdvancedScene::PopulateToolBar()
 {
-	m_ToolBar->AddButton([this]()
-		{
-			m_CurrentTool = std::make_unique<ToolBrush>(this);
-			m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
-		}
-	);
-
-	m_ToolBar->AddButton([this]()
-		{
-			LOG_INFO("Eraser button pressed");
-		}
-	);
 
 	m_ToolBar->AddButton([this]()
 		{
@@ -50,13 +38,11 @@ void AdvancedScene::PopulateToolBar()
 		}
 	);
 
-	for (int i = 0; i < 2; i++)
-	{
-		m_ToolBar->AddButton([i]()
+	m_ToolBar->AddButton([]()
 		{
-			LOG_INFO("Button {} pressed", i + 1);
+			LOG_INFO("Button {} pressed", 2);
 		});
-	}
+
 
 	m_ToolBar->AddButton([this]()
 		{
@@ -74,6 +60,23 @@ void AdvancedScene::PopulateToolBar()
 
 	m_ToolBar->AddButton([]()
 		{
-			LOG_INFO("Button {} pressed", 8);
+			LOG_INFO("Button {} pressed", 5);
+		});
+
+	m_ToolBar->AddButton([this]()
+		{
+			m_CurrentTool = std::make_unique<ToolBrush>(this);
+			m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
+		}
+	);
+
+	m_ToolBar->AddButton([]()
+		{
+			LOG_INFO("Eraser pressed");
+		});
+
+	m_ToolBar->AddButton([]()
+		{
+			LOG_INFO("Lasso pressed");
 		});
 }

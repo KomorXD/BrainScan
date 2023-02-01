@@ -3,6 +3,7 @@
 #include "../Core.hpp"
 #include "../App.hpp"
 #include "../tools/ToolBrush.hpp"
+#include "../tools/ToolMask.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -32,14 +33,18 @@ void BasicScene::PopulateMenu()
 
 void BasicScene::PopulateToolBar()
 {
-	//Toolbar
-	for (int i = 0; i < 2; i++)
-	{
-		m_ToolBar->AddButton([i]()
-			{
-				LOG_INFO("Button {} pressed", i + 1);
-			});
-	}
+	m_ToolBar->AddButton([this]()
+		{
+		m_CurrentTool = std::make_unique<ToolMask>(this, m_Shader);
+		m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
+		}
+	);
+
+	m_ToolBar->AddButton([]()
+		{
+			LOG_INFO("Button {} pressed", 2);
+		});
+	
 
 	m_ToolBar->AddButton([this]()
 		{
