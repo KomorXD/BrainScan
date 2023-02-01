@@ -17,5 +17,12 @@ UIToolSettings::UIToolSettings(IScanScene* parentScene, float posX, float posY)
 
 void UIToolSettings::Render()
 {
+	ImGui::SetNextWindowSize(ImVec2(m_Width, m_Height));
+	ImGui::SetNextWindowPos(ImVec2(m_PosX, m_PosY));
 
+	ImGui::Begin("Settings panel (no tool selected)", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+	Update();
+
+	ImGui::End();
 }

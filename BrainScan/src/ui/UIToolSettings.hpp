@@ -13,5 +13,5 @@ class UIToolSettings : public IUIPanel
 		UIToolSettings(IScanScene* parentScene, float posX = 0.0f, float posY = 0.0f);
 		virtual ~UIToolSettings() = default;
 
-		virtual void Render() = 0;
+		virtual void Render();
 };

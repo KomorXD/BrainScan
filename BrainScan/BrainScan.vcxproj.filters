@@ -120,6 +120,9 @@
     <ClCompile Include="src\ui\UIMaskSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tools\ToolNone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vendor\glad\glad.h">
@@ -1113,6 +1116,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\UIMaskSettings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tools\ToolNone.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

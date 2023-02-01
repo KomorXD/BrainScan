@@ -4,6 +4,7 @@
 #include "../App.hpp"
 #include "../tools/ToolBrush.hpp"
 #include "../tools/ToolMask.hpp"
+#include "../tools/ToolNone.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -12,7 +13,7 @@ BasicScene::BasicScene(std::unique_ptr<Scan>&& scan) : IScanScene(std::move(scan
 	PopulateMenu();
 	PopulateToolBar();
 
-	m_CurrentTool = std::make_unique<ToolMask>(this, m_Shader);
+	m_CurrentTool = std::make_unique<ToolNone>(this);
 	m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 }
 
