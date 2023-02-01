@@ -7,8 +7,8 @@ class ToolMask : public ITool
 	private:
 		std::shared_ptr<Shader> m_ScanShader;
 
-		float m_MaskMin = 0.0f;
-		float m_MaskMax = 1.0f;
+		static float s_MaskMin;
+		static float s_MaskMax;
 
 	public:
 		ToolMask(IScanScene* parentScene, std::shared_ptr<Shader>& scanShader);
