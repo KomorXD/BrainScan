@@ -65,6 +65,7 @@ void AdvancedScene::PopulateToolBar()
 
 	m_ToolBar->AddButton([this]()
 		{
+			delete m_CurrentTool.release();
 			m_CurrentTool = std::make_unique<ToolBrush>(this);
 			m_ToolSettings = m_CurrentTool->GetSettingsUI(m_ToolBar->GetPosX(), m_ToolBar->GetPosY() + m_ToolBar->GetHeight());
 		}
